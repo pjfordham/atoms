@@ -3,17 +3,19 @@
 #include <iostream>
 #include <SFML/Graphics.hpp>
 #include <random>
+#include <string>
+
 
 #include <iostream>
 
-const int BOARD_SIZE = 100;
-const float TILE_SIZE = 10.0f;
+const int BOARD_SIZE = 10;
+const float TILE_SIZE = 100.0f;
 
 #define HEIGHT BOARD_SIZE
 #define WIDTH BOARD_SIZE
 
-enum map_t {
-   Wall = 0, Corner = 1, Edge = 2, Empty = 3 };
+enum draw_t {
+   Wall = 0, Corner = 1, Edge = 2, Empty = 3, One = 4, Two = 5, Three = 6 };
 
 class Atoms {
 public:
@@ -24,16 +26,18 @@ public:
    void update();
    void clear();
    void calculateMap();
-   map_t getContent( int i, int j);
-   char getState( char state , int xCoord , int yCoord , bool toggle);
+   void recalculateBoard();
+   int getCount( int i, int j);
+   bool isVolatile( int i, int j);
+   draw_t getContent( int i, int j);
+   char getState( char state , int xCoord , int yCoord);
    void iterate(unsigned int iterations);
    bool editing = false;
 private:
-   char player[HEIGHT][WIDTH];
-   map_t map[HEIGHT][WIDTH];
-   char world[HEIGHT][WIDTH];
-   char otherWorld[HEIGHT][WIDTH];
-   bool toggle;
+   int player[HEIGHT][WIDTH];
+   int map[HEIGHT][WIDTH];
+   int world[HEIGHT][WIDTH];
+   int otherWorld[HEIGHT][WIDTH];
    std::random_device rd;
    std::mt19937 randomNumbers;
 };
@@ -45,36 +49,64 @@ Atoms::Atoms() :
 }
 
 void Atoms::clear() {
-   toggle = true;
    for ( int i = 0; i < HEIGHT; i++ ) {
       for ( int j = 0; j < WIDTH; j++ ) {
          world[i][j] = 0;
          otherWorld[i][j] = 0;
          player[i][j] = 0;
          if ( i == 0 || j == 0 || i == HEIGHT -1 || j == WIDTH - 1) {
-            map[i][j] = Wall;
+            map[i][j] = 0;
          } else {
-            map[i][j] = Empty;
+            map[i][j] = 1;
          }
       }
    }
    calculateMap();
 }
 
+bool Atoms::isVolatile( int i, int j ) {
+   return (world[i][j] == map[i][j]);
+}
+
 void Atoms::calculateMap() {
    for ( int i = 0; i < HEIGHT; i++ ) {
       for ( int j = 0; j < WIDTH; j++ ) {
-         if ( map[i][j] != Wall ) {
-            map[i][j] = (map_t)(3 -
-               ((map[i-1][j] == Wall) ? 1 : 0) -
-               ((map[i][j-1] == Wall) ? 1 : 0) -
-               ((map[i+1][j] == Wall) ? 1 : 0) -
-                                ((map[i][j+1] == Wall) ? 1 : 0));
-            std::cout << i << ":" << j << " " << (int)map[i][j] << std::endl;
+         if ( map[i][j] != 0 ) {
+            map[i][j] =  3 -
+               ((map[i-1][j] == 0) ? 1 : 0) -
+               ((map[i][j-1] == 0) ? 1 : 0) -
+               ((map[i+1][j] == 0) ? 1 : 0) -
+               ((map[i][j+1] == 0) ? 1 : 0);
          }
       }
    }
 }
+
+void Atoms::recalculateBoard() {
+   bool finished = false;
+   while (!finished) {
+      finished = true;
+      memcpy(otherWorld, world, sizeof( world ));
+      for ( int i = 0; i < HEIGHT; i++ ) {
+         for ( int j = 0; j < WIDTH; j++ ) {
+            if ( map[i][j] != Wall ) {
+               if (world[i][j] > (int)map[i][j]) {
+                  otherWorld[i][j]-= ((int)map[i][j] + 1 );
+                  otherWorld[i-1][j]++;
+                  otherWorld[i][j-1]++;
+                  otherWorld[i+1][j]++;
+                  otherWorld[i][j+1]++;
+                  finished = false;
+               }
+            } else {
+               otherWorld[i][j] = 0;
+            }
+         }
+      }
+      memcpy(world, otherWorld, sizeof( world ));
+   }
+}
+
 
 void Atoms::click( int j, int i )
 {
@@ -82,116 +114,58 @@ void Atoms::click( int j, int i )
       map[i][j] = (map[i][j] == Wall) ? Empty : Wall;
       calculateMap();
    } else {
-      if ( toggle ) {
-         world[i][j]++;
-         if (world[i][j] > map[i][j]){
-            world[i][j] = 0;
-            world[i-1][j]++;
-            world[i][j-1]++;
-            world[i+1][j]++;
-            world[i][j+1]++;
-         } else {
-            otherWorld[i][j]++;
-            if (otherWorld[i][j] > map[i][j]) otherWorld[i][j] = 0;
-         }
-      }
+      world[i][j]++;
+      recalculateBoard();
    }
 }
 
 void Atoms::print() {
-    if ( toggle ) {
         for ( int i = 0; i < HEIGHT; i++ ) {
             for ( int j = 0; j < WIDTH; j++ ) {
                 std::cout << world[i][j];
             }
             std::cout << std::endl;
         }
-    } else {
-        for ( int i = 0; i < HEIGHT; i++ ) {
-            for ( int j = 0; j < WIDTH; j++ ) {
-                std::cout << otherWorld[i][j];
-            }
-            std::cout << std::endl;
-        }
-    }
     for ( int i = 0; i < WIDTH; i++ ) {
         std::cout << '=';
     }
     std::cout << std::endl;
 }
 
-map_t Atoms::getContent(int i, int j) {
-   int content;
-   if (editing )
-      return map[i][j];
-   else if (map [i][j] == Wall)
-      return Wall;
-   else {
-      return (map_t)world[i][j];
+int Atoms::getCount( int i , int j )
+{
+   if (editing ) {
+      return (int)map[i][j];
+   }
+   return world[i][j];
+}
+
+draw_t Atoms::getContent(int i, int j) {
+   if (editing) {
+      switch( map[i][j] ) {
+      case 0: return Wall;
+      case 1: return Corner;
+      case 2: return Edge;
+      case 3: return Empty;
+      }
+   } else {
+      if ( map[i][j] == 0 ) return Wall;
+      switch( world[i][j] ) {
+      case 0: return Empty;
+      case 1: return One;
+      case 2: return Two;
+      case 3: return Three;
+      }
    }
 }
 
 void Atoms::update() {
-    if (toggle) {
-        for ( int i = 0; i < HEIGHT; i++ ) {
-            for ( int j = 0; j < WIDTH; j++ ) {
-                otherWorld[i][j] =
-                    Atoms::getState(world[i][j] , i , j , toggle);
-            }
-        }
-        toggle = !toggle;
-    } else {
-        for ( int i = 0; i < HEIGHT; i++ ) {
-            for ( int j = 0; j < WIDTH; j++ ) {
-                world[i][j] =
-                    Atoms::getState(otherWorld[i][j] , i , j , toggle);
-            }
-        }
-        toggle = !toggle;
-    }
 }
 
-char Atoms::getState( char state, int yCoord, int xCoord, bool toggle ) {
-    char neighbors = 0;
-    if ( toggle ) {
-        for ( int i = yCoord - 1; i <= yCoord + 1; i++ ) {
-            for ( int j = xCoord - 1; j <= xCoord + 1; j++ ) {
-                if ( i == yCoord && j == xCoord ) {
-                    continue;
-                }
-                if ( i > -1 && i < HEIGHT && j > -1 && j < WIDTH ) {
-                    if ( world[i][j] == 'X' ) {
-                        neighbors++;
-                    }
-                }
-            }
-        }
-    } else {
-        for ( int i = yCoord - 1; i <= yCoord + 1; i++ ) {
-            for ( int j = xCoord - 1; j <= xCoord + 1; j++ ) {
-                if ( i == yCoord && j == xCoord ) {
-                    continue;
-                }
-                if ( i > -1 && i < HEIGHT && j > -1 && j < WIDTH ) {
-                    if ( otherWorld[i][j] == 'X' ) {
-                        neighbors++;
-                    }
-                }
-            }
-        }
-    }
-    if (state == 'X') {
-        return ( neighbors > 1 && neighbors < 4 ) ? 'X' : '.';
-    }
-    else {
-        return ( neighbors == 3 ) ? 'X' : '.';
-    }
+char Atoms::getState( char state, int yCoord, int xCoord ) {
 }
 
 void Atoms::iterate( unsigned int iterations ) {
-    for ( int i = 0; i < iterations; i++ ) {
-        update();
-    }
 }
 
 
@@ -288,45 +262,93 @@ int main()
       for( int x=0;x<BOARD_SIZE;x++ ){
          for ( int y = 0;y<BOARD_SIZE;y++) {
             switch (gol.getContent(x, y)) {
-            case Empty:
-               // Do nothing
-               break;
             case Wall:
-            {
-               sf::RectangleShape shape(sf::Vector2f(TILE_SIZE, TILE_SIZE));
-               shape.setPosition((y+1)*TILE_SIZE, (x+1)*TILE_SIZE);
-               shape.setFillColor(sf::Color::Red);
-               window.draw(shape);
-            }
-            break;
-            case Edge:
             {
                sf::RectangleShape shape(sf::Vector2f(TILE_SIZE, TILE_SIZE));
                shape.setPosition((y+1)*TILE_SIZE, (x+1)*TILE_SIZE);
                shape.setFillColor(sf::Color::White);
                window.draw(shape);
+               break;
             }
             break;
+            case Empty:
+            {
+               sf::RectangleShape shape(sf::Vector2f(TILE_SIZE, TILE_SIZE));
+               shape.setPosition((y+1)*TILE_SIZE, (x+1)*TILE_SIZE);
+               shape.setFillColor(sf::Color::Black);
+               window.draw(shape);
+               break;
+            }
+            case Edge:
+            {
+               sf::RectangleShape shape(sf::Vector2f(TILE_SIZE, TILE_SIZE));
+               shape.setPosition((y+1)*TILE_SIZE, (x+1)*TILE_SIZE);
+               shape.setFillColor(sf::Color::Yellow);
+               window.draw(shape);
+               break;
+            }
             case Corner:
             {
                sf::RectangleShape shape(sf::Vector2f(TILE_SIZE, TILE_SIZE));
                shape.setPosition((y+1)*TILE_SIZE, (x+1)*TILE_SIZE);
-               shape.setFillColor(sf::Color::Green);
+               shape.setFillColor(sf::Color::Red);
                window.draw(shape);
+               break;
             }
-            break;
+            case One:
+            {
+               sf::Text text;
+               text.setFont(font);
+               text.setString("1");
+               text.setCharacterSize(TILE_SIZE);
+               text.setPosition((y+1)*TILE_SIZE, (x+1)*TILE_SIZE);
+               if (gol.isVolatile(x,y)) {
+                  text.setColor(sf::Color::Yellow);
+               } else {
+                  text.setColor(sf::Color::Red);
+               }
+               window.draw(text);
+               break;
+               }
+            case Two:
+            {
+               sf::Text text;
+               text.setFont(font);
+               text.setString("2");
+               text.setCharacterSize(TILE_SIZE);
+               text.setPosition((y+1)*TILE_SIZE, (x+1)*TILE_SIZE);
+               if (gol.isVolatile(x,y)) {
+                  text.setColor(sf::Color::Yellow);
+               } else {
+                  text.setColor(sf::Color::Red);
+               }
+               window.draw(text);
+               break;
+            }
+            case Three:
+            {
+               sf::Text text;
+               text.setFont(font);
+               text.setString("3");
+               text.setCharacterSize(TILE_SIZE);
+               text.setPosition((y+1)*TILE_SIZE, (x+1)*TILE_SIZE);
+               if (gol.isVolatile(x,y)) {
+                  text.setColor(sf::Color::Yellow);
+               } else {
+                  text.setColor(sf::Color::Red);
+               }
+               window.draw(text);
+               break;
+            }
             }
          }
       }
       sf::Time elapsed = messageClock.getElapsedTime();
       if (elapsed.asSeconds() < 2.0f) {
-         sf::Text text;
-         text.setFont(font);
-         text.setString("Hello!");
-         text.setCharacterSize(4*TILE_SIZE); // in pixels, not points!
-         text.setPosition(4*TILE_SIZE, 4*TILE_SIZE);
-         text.setColor(sf::Color::Red);
-         window.draw(text);
+               // sf::RectangleShape shape(sf::Vector2f(TILE_SIZE, TILE_SIZE));
+               // shape.setPosition((y+1)*TILE_SIZE, (x+1)*TILE_SIZE);
+               // shape.setFillColor(sf::Color::Red);
+               // window.draw(shape);
       }
 
       window.display();
