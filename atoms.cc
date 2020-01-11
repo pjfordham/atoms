@@ -165,7 +165,7 @@ int main()
       exit( -1 );
    }
 
-   sf::RenderWindow window(sf::VideoMode((2+BOARD_SIZE) * (int)TILE_SIZE, (2+BOARD_SIZE) * (int)TILE_SIZE), "Atoms");
+   sf::RenderWindow window(sf::VideoMode(BOARD_SIZE * (int)TILE_SIZE, BOARD_SIZE * (int)TILE_SIZE), "Atoms");
 
    sf::Clock clock;
    sf::Clock messageClock;
@@ -178,68 +178,37 @@ int main()
             gol.recalculateBoard();
             clock.restart();
          }
-      } else {
+      }
 
       sf::Event event;
       while (window.pollEvent(event)) {
-         if (event.type == sf::Event::Closed) {
+         if (event.type == sf::Event::Closed ||
+             (event.type == sf::Event::KeyPressed &&
+              event.key.code == sf::Keyboard::Escape) ) {
             window.close();
-         } else if (event.type == sf::Event::MouseWheelScrolled) {
-            if(event.mouseWheelScroll.wheel == sf::Mouse::VerticalWheel ) {
-               messageClock.restart();
-               // shapeIndex+=event.mouseWheelScroll.delta;
-               // if (shapeIndex < 0)
-               //    shapeIndex = ( sizeof( shapes ) / sizeof (shapes[0] ) ) - 1;
-               // if (shapeIndex >= ( sizeof( shapes ) / sizeof (shapes[0] ) ))
-               //    shapeIndex = 0;
+         }
+         if ( gol.finished ) {
+            if (event.type == sf::Event::MouseButtonPressed) {
+               if (event.mouseButton.button == sf::Mouse::Left) {
+                  gol.click( ((int)event.mouseButton.x / (int)TILE_SIZE ),
+                             ((int)event.mouseButton.y / (int)TILE_SIZE ) );
+               }
             }
-         } else if (event.type == sf::Event::MouseButtonPressed) {
-            if (event.mouseButton.button == sf::Mouse::Left) {
-               gol.click( ((int)event.mouseButton.x / (int)TILE_SIZE ) - 1,
-                          ((int)event.mouseButton.y / (int)TILE_SIZE ) - 1 );
-            } else if (event.mouseButton.button == sf::Mouse::Right) {
-               // gol.addShape( shapes[ shapeIndex],
-               //               ((int)event.mouseButton.x / (int)TILE_SIZE ) - 1,
-               //               ((int)event.mouseButton.y / (int)TILE_SIZE ) - 1 );
+            else if (event.type == sf::Event::KeyPressed) {
+               if (event.key.code == sf::Keyboard::P){
+                  gol.print();
+               }
+               if (event.key.code == sf::Keyboard::C){
+                  gol.clear();
+               }
+               if (event.key.code == sf::Keyboard::Space){
+                  gol.editing = !gol.editing;
+               }
             }
          }
-         else if (event.type == sf::Event::KeyPressed) {
-            if (event.key.code == sf::Keyboard::Escape){
-               return 0;
-            }
-            if (event.key.code == sf::Keyboard::P){
-               gol.print();
-            }
-            if (event.key.code == sf::Keyboard::C){
-               gol.clear();
-            }
-            if (event.key.code == sf::Keyboard::Space){
-               gol.editing = !gol.editing;
-            }
-            if (event.key.code == sf::Keyboard::Left){
-               // game.setDirection( Game::Left );
-            }
-            if (event.key.code == sf::Keyboard::Right){
-               // game.setDirection( Game::Right );
-            }
-            if (event.key.code == sf::Keyboard::Up){
-               // game.setDirection( Game::Up );
-            }
-            if (event.key.code == sf::Keyboard::Down){
-               // game.setDirection( Game::Down );
-            }
-
-         }
-      }
       }
       // Clear window to Blue to do blue boarder.
-      window.clear( sf::Color::Blue );
-
-      // draw black background for theatre of the universe
-      sf::RectangleShape shape(sf::Vector2f(TILE_SIZE*BOARD_SIZE, TILE_SIZE*BOARD_SIZE));
-      shape.setPosition( TILE_SIZE, TILE_SIZE);
-      shape.setFillColor(sf::Color::Black);
-      window.draw(shape);
+      window.clear( sf::Color::Black );
 
       for( int x=0;x<BOARD_SIZE;x++ ){
          for ( int y = 0;y<BOARD_SIZE;y++) {
@@ -247,24 +216,18 @@ int main()
             case Wall:
             {
                sf::RectangleShape shape(sf::Vector2f(TILE_SIZE, TILE_SIZE));
-               shape.setPosition((y+1)*TILE_SIZE, (x+1)*TILE_SIZE);
+               shape.setPosition(y*TILE_SIZE, x*TILE_SIZE);
                shape.setFillColor(sf::Color::White);
                window.draw(shape);
                break;
             }
             break;
             case Empty:
-            {
-               sf::RectangleShape shape(sf::Vector2f(TILE_SIZE, TILE_SIZE));
-               shape.setPosition((y+1)*TILE_SIZE, (x+1)*TILE_SIZE);
-               shape.setFillColor(sf::Color::Black);
-               window.draw(shape);
                break;
-            }
             case Edge:
             {
                sf::RectangleShape shape(sf::Vector2f(TILE_SIZE, TILE_SIZE));
-               shape.setPosition((y+1)*TILE_SIZE, (x+1)*TILE_SIZE);
+               shape.setPosition(y*TILE_SIZE, x*TILE_SIZE);
                shape.setFillColor(sf::Color::Yellow);
                window.draw(shape);
                break;
@@ -272,7 +235,7 @@ int main()
             case Corner:
             {
                sf::RectangleShape shape(sf::Vector2f(TILE_SIZE, TILE_SIZE));
-               shape.setPosition((y+1)*TILE_SIZE, (x+1)*TILE_SIZE);
+               shape.setPosition(y*TILE_SIZE, x*TILE_SIZE);
                shape.setFillColor(sf::Color::Red);
                window.draw(shape);
                break;
@@ -283,7 +246,7 @@ int main()
                text.setFont(font);
                text.setString("1");
                text.setCharacterSize(TILE_SIZE);
-               text.setPosition((y+1)*TILE_SIZE, (x+1)*TILE_SIZE);
+               text.setPosition(y*TILE_SIZE, x*TILE_SIZE);
                if (gol.isVolatile(x,y)) {
                   text.setColor(sf::Color::Yellow);
                } else {
@@ -291,14 +254,14 @@ int main()
                }
                window.draw(text);
                break;
-               }
+            }
             case Two:
             {
                sf::Text text;
                text.setFont(font);
                text.setString("2");
                text.setCharacterSize(TILE_SIZE);
-               text.setPosition((y+1)*TILE_SIZE, (x+1)*TILE_SIZE);
+               text.setPosition(y*TILE_SIZE, x*TILE_SIZE);
                if (gol.isVolatile(x,y)) {
                   text.setColor(sf::Color::Yellow);
                } else {
@@ -313,7 +276,7 @@ int main()
                text.setFont(font);
                text.setString("3");
                text.setCharacterSize(TILE_SIZE);
-               text.setPosition((y+1)*TILE_SIZE, (x+1)*TILE_SIZE);
+               text.setPosition(y*TILE_SIZE, x*TILE_SIZE);
                if (gol.isVolatile(x,y)) {
                   text.setColor(sf::Color::Yellow);
                } else {
@@ -327,10 +290,10 @@ int main()
       }
       sf::Time elapsed = messageClock.getElapsedTime();
       if (elapsed.asSeconds() < 2.0f) {
-               // sf::RectangleShape shape(sf::Vector2f(TILE_SIZE, TILE_SIZE));
-               // shape.setPosition((y+1)*TILE_SIZE, (x+1)*TILE_SIZE);
-               // shape.setFillColor(sf::Color::Red);
-               // window.draw(shape);
+         // sf::RectangleShape shape(sf::Vector2f(TILE_SIZE, TILE_SIZE));
+         // shape.setPosition((y+1)*TILE_SIZE, (x+1)*TILE_SIZE);
+         // shape.setFillColor(sf::Color::Red);
+         // window.draw(shape);
       }
 
       window.display();
