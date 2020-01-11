@@ -23,15 +23,12 @@ public:
    void click( int i, int j );
 
    void print();
-   void update();
    void clear();
    void calculateMap();
    void recalculateBoard();
    int getCount( int i, int j);
    bool isVolatile( int i, int j);
    draw_t getContent( int i, int j);
-   char getState( char state , int xCoord , int yCoord);
-   void iterate(unsigned int iterations);
    bool editing = false;
    bool finished = false;
 private:
@@ -157,16 +154,6 @@ draw_t Atoms::getContent(int i, int j) {
    }
 }
 
-void Atoms::update() {
-}
-
-char Atoms::getState( char state, int yCoord, int xCoord ) {
-}
-
-void Atoms::iterate( unsigned int iterations ) {
-}
-
-
 int main()
 {
 
@@ -219,9 +206,6 @@ int main()
          else if (event.type == sf::Event::KeyPressed) {
             if (event.key.code == sf::Keyboard::Escape){
                return 0;
-            }
-            if (event.key.code == sf::Keyboard::I){
-               gol.iterate(1);
             }
             if (event.key.code == sf::Keyboard::P){
                gol.print();
