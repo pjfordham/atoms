@@ -33,6 +33,7 @@ public:
    char getState( char state , int xCoord , int yCoord);
    void iterate(unsigned int iterations);
    bool editing = false;
+   bool finished = false;
 private:
    int player[HEIGHT][WIDTH];
    int map[HEIGHT][WIDTH];
@@ -83,28 +84,25 @@ void Atoms::calculateMap() {
 }
 
 void Atoms::recalculateBoard() {
-   bool finished = false;
-   while (!finished) {
-      finished = true;
-      memcpy(otherWorld, world, sizeof( world ));
-      for ( int i = 0; i < HEIGHT; i++ ) {
-         for ( int j = 0; j < WIDTH; j++ ) {
-            if ( map[i][j] != Wall ) {
-               if (world[i][j] > (int)map[i][j]) {
-                  otherWorld[i][j]-= ((int)map[i][j] + 1 );
-                  otherWorld[i-1][j]++;
-                  otherWorld[i][j-1]++;
-                  otherWorld[i+1][j]++;
-                  otherWorld[i][j+1]++;
-                  finished = false;
-               }
-            } else {
-               otherWorld[i][j] = 0;
+   finished = true;
+   memcpy(otherWorld, world, sizeof( world ));
+   for ( int i = 0; i < HEIGHT; i++ ) {
+      for ( int j = 0; j < WIDTH; j++ ) {
+         if ( map[i][j] != Wall ) {
+            if (world[i][j] > (int)map[i][j]) {
+               otherWorld[i][j]-= ((int)map[i][j] + 1 );
+               otherWorld[i-1][j]++;
+               otherWorld[i][j-1]++;
+               otherWorld[i+1][j]++;
+               otherWorld[i][j+1]++;
+               finished = false;
             }
+         } else {
+            otherWorld[i][j] = 0;
          }
       }
-      memcpy(world, otherWorld, sizeof( world ));
    }
+   memcpy(world, otherWorld, sizeof( world ));
 }
 
 
@@ -115,7 +113,7 @@ void Atoms::click( int j, int i )
       calculateMap();
    } else {
       world[i][j]++;
-      recalculateBoard();
+      finished = false;
    }
 }
 
@@ -180,20 +178,20 @@ int main()
       exit( -1 );
    }
 
-   sf::RenderWindow window(sf::VideoMode((2+BOARD_SIZE) * (int)TILE_SIZE, (2+BOARD_SIZE) * (int)TILE_SIZE), "Game of Life");
+   sf::RenderWindow window(sf::VideoMode((2+BOARD_SIZE) * (int)TILE_SIZE, (2+BOARD_SIZE) * (int)TILE_SIZE), "Atoms");
 
    sf::Clock clock;
    sf::Clock messageClock;
 
    bool running = false;
    while (window.isOpen()) {
-      if ( running ) {
+      if ( !gol.finished ) {
          sf::Time elapsed = clock.getElapsedTime();
          if (elapsed.asSeconds() > 0.05f) {
-            gol.iterate(1);
+            gol.recalculateBoard();
             clock.restart();
          }
-      }
+      } else {
 
       sf::Event event;
       while (window.pollEvent(event)) {
@@ -249,11 +247,11 @@ int main()
 
          }
       }
-
+      }
       // Clear window to Blue to do blue boarder.
       window.clear( sf::Color::Blue );
 
-      // draw black background for theatre of life
+      // draw black background for theatre of the universe
       sf::RectangleShape shape(sf::Vector2f(TILE_SIZE*BOARD_SIZE, TILE_SIZE*BOARD_SIZE));
       shape.setPosition( TILE_SIZE, TILE_SIZE);
       shape.setFillColor(sf::Color::Black);
