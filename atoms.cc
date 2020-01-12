@@ -43,7 +43,7 @@ public:
    void recalculateBoard();
    draw_t getContent( int i, int j);
    bool editing = true;
-   bool finished = false;
+   bool finished = true;
 private:
    int currentPlayer;
    int player[HEIGHT][WIDTH];
@@ -237,32 +237,22 @@ int main()
          for ( int y = 0;y<BOARD_SIZE;y++) {
             switch (gol.getContent(x, y)) {
             case Wall:
-            {
-               sf::RectangleShape shape(sf::Vector2f(TILE_SIZE, TILE_SIZE));
-               shape.setPosition(y*TILE_SIZE, x*TILE_SIZE);
-               shape.setFillColor(sf::Color::White);
-               window.draw(shape);
-               break;
-            }
-            break;
-            case Empty:
-               break;
             case Edge:
-            {
-               sf::RectangleShape shape(sf::Vector2f(TILE_SIZE, TILE_SIZE));
-               shape.setPosition(y*TILE_SIZE, x*TILE_SIZE);
-               shape.setFillColor(sf::Color::Yellow);
-               window.draw(shape);
-               break;
-            }
             case Corner:
             {
                sf::RectangleShape shape(sf::Vector2f(TILE_SIZE, TILE_SIZE));
                shape.setPosition(y*TILE_SIZE, x*TILE_SIZE);
-               shape.setFillColor(sf::Color::Red);
+               switch (gol.getContent(x,y)) {
+               case Wall: shape.setFillColor(sf::Color::White); break;
+               case Edge: shape.setFillColor(sf::Color::Yellow); break;
+               case Corner: shape.setFillColor(sf::Color::Red); break;
+               default: break;
+               }
                window.draw(shape);
                break;
             }
+            case Empty:
+               break;
             case P1_One:
             case P2_One:
             case P3_One:
@@ -278,8 +268,12 @@ int main()
                text.setOrigin(textRect.left + textRect.width/2.0f,
                               textRect.top  + textRect.height/2.0f);
                text.setPosition((y+0.5)*TILE_SIZE, (x+0.5)*TILE_SIZE);
-               text.setColor(sf::Color::Red);
-
+               switch(gol.getContent(x, y)) {
+               case P1_One: text.setColor(sf::Color::Red); break;
+               case P2_One: text.setColor(sf::Color::Green); break;
+               case P3_One: text.setColor(sf::Color::Blue); break;
+               default:     text.setColor(sf::Color::White); break;
+               }
                window.draw(text);
                break;
             }
@@ -298,8 +292,12 @@ int main()
                text.setOrigin(textRect.left + textRect.width/2.0f,
                               textRect.top  + textRect.height/2.0f);
                text.setPosition((y+0.5)*TILE_SIZE, (x+0.5)*TILE_SIZE);
-
-               text.setColor(sf::Color::Red);
+               switch(gol.getContent(x, y)) {
+               case P1_Two: text.setColor(sf::Color::Red); break;
+               case P2_Two: text.setColor(sf::Color::Green); break;
+               case P3_Two: text.setColor(sf::Color::Blue); break;
+               default:     text.setColor(sf::Color::White); break;
+               }
                window.draw(text);
                break;
             }
@@ -318,8 +316,12 @@ int main()
                text.setOrigin(textRect.left + textRect.width/2.0f,
                               textRect.top  + textRect.height/2.0f);
                text.setPosition((y+0.5)*TILE_SIZE, (x+0.5)*TILE_SIZE);
-
-               text.setColor(sf::Color::Red);
+               switch(gol.getContent(x, y)) {
+               case P1_Three: text.setColor(sf::Color::Red); break;
+               case P2_Three: text.setColor(sf::Color::Green); break;
+               case P3_Three: text.setColor(sf::Color::Blue); break;
+               default:     text.setColor(sf::Color::White); break;
+               }
                window.draw(text);
                break;
             }
@@ -328,6 +330,11 @@ int main()
             case P3_V_One:
             case P4_V_One:
             {
+               sf::RectangleShape shape(sf::Vector2f(TILE_SIZE, TILE_SIZE));
+               shape.setPosition(y*TILE_SIZE, x*TILE_SIZE);
+               shape.setFillColor(sf::Color::Yellow);
+               window.draw(shape);
+
                sf::Text text;
                text.setFont(font);
                text.setString("1");
@@ -339,7 +346,12 @@ int main()
                               textRect.top  + textRect.height/2.0f);
                text.setPosition((y+0.5)*TILE_SIZE, (x+0.5)*TILE_SIZE);
 
-               text.setColor(sf::Color::Yellow);
+               switch(gol.getContent(x, y)) {
+               case P1_V_One: text.setColor(sf::Color::Red); break;
+               case P2_V_One: text.setColor(sf::Color::Green); break;
+               case P3_V_One: text.setColor(sf::Color::Blue); break;
+               default:     text.setColor(sf::Color::White); break;
+               }
                window.draw(text);
                break;
             }
@@ -348,6 +360,11 @@ int main()
             case P3_V_Two:
             case P4_V_Two:
             {
+               sf::RectangleShape shape(sf::Vector2f(TILE_SIZE, TILE_SIZE));
+               shape.setPosition(y*TILE_SIZE, x*TILE_SIZE);
+               shape.setFillColor(sf::Color::Yellow);
+               window.draw(shape);
+
                sf::Text text;
                text.setFont(font);
                text.setString("2");
@@ -358,8 +375,12 @@ int main()
                text.setOrigin(textRect.left + textRect.width/2.0f,
                               textRect.top  + textRect.height/2.0f);
                text.setPosition((y+0.5)*TILE_SIZE, (x+0.5)*TILE_SIZE);
-
-               text.setColor(sf::Color::Yellow);
+               switch(gol.getContent(x, y)) {
+               case P1_V_Two: text.setColor(sf::Color::Red); break;
+               case P2_V_Two: text.setColor(sf::Color::Green); break;
+               case P3_V_Two: text.setColor(sf::Color::Blue); break;
+               default:     text.setColor(sf::Color::White); break;
+               }
                window.draw(text);
                break;
             }
@@ -368,6 +389,11 @@ int main()
             case P3_V_Three:
             case P4_V_Three:
             {
+               sf::RectangleShape shape(sf::Vector2f(TILE_SIZE, TILE_SIZE));
+               shape.setPosition(y*TILE_SIZE, x*TILE_SIZE);
+               shape.setFillColor(sf::Color::Yellow);
+               window.draw(shape);
+
                sf::Text text;
                text.setFont(font);
                text.setString("3");
@@ -378,8 +404,12 @@ int main()
                text.setOrigin(textRect.left + textRect.width/2.0f,
                               textRect.top  + textRect.height/2.0f);
                text.setPosition((y+0.5)*TILE_SIZE, (x+0.5)*TILE_SIZE);
-
-               text.setColor(sf::Color::Yellow);
+               switch(gol.getContent(x, y)) {
+               case P1_V_Three: text.setColor(sf::Color::Red); break;
+               case P2_V_Three: text.setColor(sf::Color::Green); break;
+               case P3_V_Three: text.setColor(sf::Color::Blue); break;
+               default:     text.setColor(sf::Color::White); break;
+               }
                window.draw(text);
                break;
             }
