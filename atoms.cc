@@ -246,7 +246,13 @@ int main()
                text.setFont(font);
                text.setString("1");
                text.setCharacterSize(TILE_SIZE);
-               text.setPosition(y*TILE_SIZE, x*TILE_SIZE);
+
+               //center text
+               sf::FloatRect textRect = text.getLocalBounds();
+               text.setOrigin(textRect.left + textRect.width/2.0f,
+                              textRect.top  + textRect.height/2.0f);
+               text.setPosition((y+0.5)*TILE_SIZE, (x+0.5)*TILE_SIZE);
+
                if (gol.isVolatile(x,y)) {
                   text.setColor(sf::Color::Yellow);
                } else {
@@ -261,7 +267,13 @@ int main()
                text.setFont(font);
                text.setString("2");
                text.setCharacterSize(TILE_SIZE);
-               text.setPosition(y*TILE_SIZE, x*TILE_SIZE);
+
+               //center text
+               sf::FloatRect textRect = text.getLocalBounds();
+               text.setOrigin(textRect.left + textRect.width/2.0f,
+                              textRect.top  + textRect.height/2.0f);
+               text.setPosition((y+0.5)*TILE_SIZE, (x+0.5)*TILE_SIZE);
+
                if (gol.isVolatile(x,y)) {
                   text.setColor(sf::Color::Yellow);
                } else {
@@ -276,7 +288,13 @@ int main()
                text.setFont(font);
                text.setString("3");
                text.setCharacterSize(TILE_SIZE);
-               text.setPosition(y*TILE_SIZE, x*TILE_SIZE);
+
+               //center text
+               sf::FloatRect textRect = text.getLocalBounds();
+               text.setOrigin(textRect.left + textRect.width/2.0f,
+                              textRect.top  + textRect.height/2.0f);
+               text.setPosition((y+0.5)*TILE_SIZE, (x+0.5)*TILE_SIZE);
+
                if (gol.isVolatile(x,y)) {
                   text.setColor(sf::Color::Yellow);
                } else {
