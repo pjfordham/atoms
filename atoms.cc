@@ -46,6 +46,8 @@ public:
    bool finished = true;
 private:
    int currentPlayer;
+   bool firstGo[4];
+   int scores[4];
    int player[HEIGHT][WIDTH];
    int map[HEIGHT][WIDTH];
    int world[HEIGHT][WIDTH];
@@ -54,7 +56,6 @@ private:
 
 Atoms::Atoms()
 {
-   currentPlayer = 0;
    clear();
    editing = false;
    clear();
@@ -73,6 +74,9 @@ void Atoms::clear() {
       }
       calculateMap();
    } else {
+      currentPlayer = 0;
+      scores[0] = scores[1] = scores[2] = scores[3] = 0;
+      firstGo[0] = firstGo[1] = firstGo[2] = firstGo[3] = true;
       for ( int i = 0; i < HEIGHT; i++ ) {
          for ( int j = 0; j < WIDTH; j++ ) {
             world[i][j] = 0;
@@ -121,7 +125,22 @@ void Atoms::recalculateBoard() {
       }
    }
    if (finished)
-      currentPlayer = (currentPlayer + 1) % 4;
+   {
+      scores[0] = 0;
+      scores[1] = 0;
+      scores[2] = 0;
+      scores[3] = 0;
+      for ( int i = 0; i < HEIGHT; i++ ) {
+         for ( int j = 0; j < WIDTH; j++ ) {
+            if ( map[i][j] != Wall )
+               scores[player[i][j]] += world[i][j];
+         }
+      }
+      firstGo[ currentPlayer ] = false;
+      do {
+         currentPlayer = (currentPlayer + 1) % 4;
+      } while ( scores[ currentPlayer ] == 0 && !firstGo[ currentPlayer ] );
+   }
 }
 
 
