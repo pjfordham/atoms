@@ -41,7 +41,6 @@ public:
    void clear();
    void calculateMap();
    void recalculateBoard();
-   bool isVolatile( int i, int j);
    draw_t getContent( int i, int j);
    bool editing = true;
    bool finished = false;
@@ -80,10 +79,6 @@ void Atoms::clear() {
          }
       }
    }
-}
-
-bool Atoms::isVolatile( int i, int j ) {
-   return (world[i][j] == map[i][j]);
 }
 
 void Atoms::calculateMap() {
@@ -143,11 +138,12 @@ draw_t Atoms::getContent(int i, int j) {
       }
    } else {
       if ( map[i][j] == 0 ) return Wall;
+      bool isVolatile = (world[i][j] == map[i][j]);
       switch( world[i][j] ) {
       case 0: return Empty;
-      case 1: return isVolatile(i,j) ? P1_V_One : P1_One;
-      case 2: return isVolatile(i,j) ? P1_V_Two : P1_Two;
-      case 3: return isVolatile(i,j) ? P1_V_Three : P1_Three;
+      case 1: return isVolatile ? P1_V_One : P1_One;
+      case 2: return isVolatile ? P1_V_Two : P1_Two;
+      case 3: return isVolatile ? P1_V_Three : P1_Three;
       default: return Explosion;
       }
    }
