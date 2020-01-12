@@ -29,7 +29,7 @@ public:
    int getCount( int i, int j);
    bool isVolatile( int i, int j);
    draw_t getContent( int i, int j);
-   bool editing = false;
+   bool editing = true;
    bool finished = false;
 private:
    int player[HEIGHT][WIDTH];
@@ -44,22 +44,31 @@ Atoms::Atoms() :
    randomNumbers(rd())
 {
    clear();
+   editing = false;
+   clear();
 }
 
 void Atoms::clear() {
-   for ( int i = 0; i < HEIGHT; i++ ) {
-      for ( int j = 0; j < WIDTH; j++ ) {
-         world[i][j] = 0;
-         otherWorld[i][j] = 0;
-         player[i][j] = 0;
-         if ( i == 0 || j == 0 || i == HEIGHT -1 || j == WIDTH - 1) {
-            map[i][j] = 0;
-         } else {
-            map[i][j] = 1;
+   if (editing) {
+      for ( int i = 0; i < HEIGHT; i++ ) {
+         for ( int j = 0; j < WIDTH; j++ ) {
+            if ( i == 0 || j == 0 || i == HEIGHT -1 || j == WIDTH - 1) {
+               map[i][j] = 0;
+            } else {
+               map[i][j] = 1;
+            }
+         }
+      }
+      calculateMap();
+   } else {
+      for ( int i = 0; i < HEIGHT; i++ ) {
+         for ( int j = 0; j < WIDTH; j++ ) {
+            world[i][j] = 0;
+            otherWorld[i][j] = 0;
+            player[i][j] = 0;
          }
       }
    }
-   calculateMap();
 }
 
 bool Atoms::isVolatile( int i, int j ) {
@@ -201,12 +210,15 @@ int main()
                   gol.clear();
                }
                if (event.key.code == sf::Keyboard::Space){
+                  if (!gol.editing) {
+                     gol.clear();
+                  }
                   gol.editing = !gol.editing;
                }
             }
          }
       }
-      // Clear window to Blue to do blue boarder.
+      // Clear window to Blue to do blue border.
       window.clear( sf::Color::Black );
 
       for( int x=0;x<BOARD_SIZE;x++ ){
