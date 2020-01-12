@@ -2,7 +2,6 @@
 #include <string.h>
 #include <iostream>
 #include <SFML/Graphics.hpp>
-#include <random>
 #include <string>
 
 
@@ -21,12 +20,9 @@ class Atoms {
 public:
    Atoms();
    void click( int i, int j );
-
-   void print();
    void clear();
    void calculateMap();
    void recalculateBoard();
-   int getCount( int i, int j);
    bool isVolatile( int i, int j);
    draw_t getContent( int i, int j);
    bool editing = true;
@@ -36,12 +32,9 @@ private:
    int map[HEIGHT][WIDTH];
    int world[HEIGHT][WIDTH];
    int otherWorld[HEIGHT][WIDTH];
-   std::random_device rd;
-   std::mt19937 randomNumbers;
 };
 
-Atoms::Atoms() :
-   randomNumbers(rd())
+Atoms::Atoms()
 {
    clear();
    editing = false;
@@ -122,27 +115,6 @@ void Atoms::click( int j, int i )
    }
 }
 
-void Atoms::print() {
-        for ( int i = 0; i < HEIGHT; i++ ) {
-            for ( int j = 0; j < WIDTH; j++ ) {
-                std::cout << world[i][j];
-            }
-            std::cout << std::endl;
-        }
-    for ( int i = 0; i < WIDTH; i++ ) {
-        std::cout << '=';
-    }
-    std::cout << std::endl;
-}
-
-int Atoms::getCount( int i , int j )
-{
-   if (editing ) {
-      return (int)map[i][j];
-   }
-   return world[i][j];
-}
-
 draw_t Atoms::getContent(int i, int j) {
    if (editing) {
       switch( map[i][j] ) {
@@ -203,9 +175,6 @@ int main()
                }
             }
             else if (event.type == sf::Event::KeyPressed) {
-               if (event.key.code == sf::Keyboard::P){
-                  gol.print();
-               }
                if (event.key.code == sf::Keyboard::C){
                   gol.clear();
                }
