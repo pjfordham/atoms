@@ -45,6 +45,7 @@ public:
    bool editing = true;
    bool finished = false;
 private:
+   int currentPlayer;
    int player[HEIGHT][WIDTH];
    int map[HEIGHT][WIDTH];
    int world[HEIGHT][WIDTH];
@@ -53,6 +54,7 @@ private:
 
 Atoms::Atoms()
 {
+   currentPlayer = 0;
    clear();
    editing = false;
    clear();
@@ -107,6 +109,10 @@ void Atoms::recalculateBoard() {
                world[i][j-1]++;
                world[i+1][j]++;
                world[i][j+1]++;
+               player[i-1][j]=currentPlayer;
+               player[i][j-1]=currentPlayer;
+               player[i+1][j]=currentPlayer;
+               player[i][j+1]=currentPlayer;
                finished = false;
             }
          } else {
@@ -114,6 +120,8 @@ void Atoms::recalculateBoard() {
          }
       }
    }
+   if (finished)
+      currentPlayer = (currentPlayer + 1) % 4;
 }
 
 
@@ -123,8 +131,11 @@ void Atoms::click( int j, int i )
       map[i][j] = (map[i][j] == Wall) ? Empty : Wall;
       calculateMap();
    } else {
-      world[i][j]++;
-      finished = false;
+      if ( player[i][j] == currentPlayer || world[i][j] == 0 ) {
+         world[i][j]++;
+         player[i][j] = currentPlayer;
+         finished = false;
+      }
    }
 }
 
@@ -141,9 +152,27 @@ draw_t Atoms::getContent(int i, int j) {
       bool isVolatile = (world[i][j] == map[i][j]);
       switch( world[i][j] ) {
       case 0: return Empty;
-      case 1: return isVolatile ? P1_V_One : P1_One;
-      case 2: return isVolatile ? P1_V_Two : P1_Two;
-      case 3: return isVolatile ? P1_V_Three : P1_Three;
+      case 1:
+         switch (player[i][j]) {
+         case 0: return isVolatile ? P1_V_One : P1_One;
+         case 1: return isVolatile ? P2_V_One : P2_One;
+         case 2: return isVolatile ? P3_V_One : P3_One;
+         case 3: return isVolatile ? P4_V_One : P4_One;
+         }
+      case 2:
+         switch (player[i][j]) {
+         case 0: return isVolatile ? P1_V_Two : P1_Two;
+         case 1: return isVolatile ? P2_V_Two : P2_Two;
+         case 2: return isVolatile ? P3_V_Two : P3_Two;
+         case 3: return isVolatile ? P4_V_Two : P4_Two;
+         }
+      case 3:
+         switch (player[i][j]) {
+         case 0: return isVolatile ? P1_V_Three : P1_Three;
+         case 1: return isVolatile ? P2_V_Three : P2_Three;
+         case 2: return isVolatile ? P3_V_Three : P3_Three;
+         case 3: return isVolatile ? P4_V_Three : P4_Three;
+         }
       default: return Explosion;
       }
    }
@@ -235,6 +264,9 @@ int main()
                break;
             }
             case P1_One:
+            case P2_One:
+            case P3_One:
+            case P4_One:
             {
                sf::Text text;
                text.setFont(font);
@@ -252,6 +284,9 @@ int main()
                break;
             }
             case P1_Two:
+            case P2_Two:
+            case P3_Two:
+            case P4_Two:
             {
                sf::Text text;
                text.setFont(font);
@@ -269,6 +304,9 @@ int main()
                break;
             }
             case P1_Three:
+            case P2_Three:
+            case P3_Three:
+            case P4_Three:
             {
                sf::Text text;
                text.setFont(font);
@@ -286,6 +324,9 @@ int main()
                break;
             }
             case P1_V_One:
+            case P2_V_One:
+            case P3_V_One:
+            case P4_V_One:
             {
                sf::Text text;
                text.setFont(font);
@@ -303,6 +344,9 @@ int main()
                break;
             }
             case P1_V_Two:
+            case P2_V_Two:
+            case P3_V_Two:
+            case P4_V_Two:
             {
                sf::Text text;
                text.setFont(font);
@@ -320,6 +364,9 @@ int main()
                break;
             }
             case P1_V_Three:
+            case P2_V_Three:
+            case P3_V_Three:
+            case P4_V_Three:
             {
                sf::Text text;
                text.setFont(font);
