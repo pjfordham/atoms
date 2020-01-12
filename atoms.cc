@@ -8,8 +8,8 @@
 
 #include <iostream>
 
-const int BOARD_SIZE = 10;
-const float TILE_SIZE = 100.0f;
+const int BOARD_SIZE = 20;
+const float TILE_SIZE = 50.0f;
 
 #define HEIGHT BOARD_SIZE
 #define WIDTH BOARD_SIZE
@@ -86,20 +86,19 @@ void Atoms::recalculateBoard() {
    for ( int i = 0; i < HEIGHT; i++ ) {
       for ( int j = 0; j < WIDTH; j++ ) {
          if ( map[i][j] != Wall ) {
-            if (world[i][j] > (int)map[i][j]) {
-               otherWorld[i][j]-= ((int)map[i][j] + 1 );
-               otherWorld[i-1][j]++;
-               otherWorld[i][j-1]++;
-               otherWorld[i+1][j]++;
-               otherWorld[i][j+1]++;
+            if (otherWorld[i][j] > (int)map[i][j]) {
+               world[i][j]-= ((int)map[i][j] + 1 );
+               world[i-1][j]++;
+               world[i][j-1]++;
+               world[i+1][j]++;
+               world[i][j+1]++;
                finished = false;
             }
          } else {
-            otherWorld[i][j] = 0;
+            world[i][j] = 0;
          }
       }
    }
-   memcpy(world, otherWorld, sizeof( world ));
 }
 
 
