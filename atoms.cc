@@ -14,7 +14,25 @@ const float TILE_SIZE = 50.0f;
 #define WIDTH BOARD_SIZE
 
 enum draw_t {
-   Wall = 0, Corner = 1, Edge = 2, Empty = 3, One = 4, Two = 5, Three = 6 };
+   // Map Elements
+   Wall, Corner, Edge, Empty, Explosion,
+
+   // Player One
+   P1_One, P1_Two, P1_Three,
+   P1_V_One, P1_V_Two, P1_V_Three,
+
+   // Player Two
+   P2_One, P2_Two, P2_Three,
+   P2_V_One, P2_V_Two, P2_V_Three,
+
+   // Player Three
+   P3_One, P3_Two, P3_Three,
+   P3_V_One, P3_V_Two, P3_V_Three,
+
+   // Player Four
+   P4_One, P4_Two, P4_Three,
+   P4_V_One, P4_V_Two, P4_V_Three,
+};
 
 class Atoms {
 public:
@@ -127,9 +145,10 @@ draw_t Atoms::getContent(int i, int j) {
       if ( map[i][j] == 0 ) return Wall;
       switch( world[i][j] ) {
       case 0: return Empty;
-      case 1: return One;
-      case 2: return Two;
-      case 3: return Three;
+      case 1: return isVolatile(i,j) ? P1_V_One : P1_One;
+      case 2: return isVolatile(i,j) ? P1_V_Two : P1_Two;
+      case 3: return isVolatile(i,j) ? P1_V_Three : P1_Three;
+      default: return Explosion;
       }
    }
 }
@@ -148,7 +167,6 @@ int main()
    sf::RenderWindow window(sf::VideoMode(BOARD_SIZE * (int)TILE_SIZE, BOARD_SIZE * (int)TILE_SIZE), "Atoms");
 
    sf::Clock clock;
-   sf::Clock messageClock;
 
    bool running = false;
    while (window.isOpen()) {
@@ -220,7 +238,7 @@ int main()
                window.draw(shape);
                break;
             }
-            case One:
+            case P1_One:
             {
                sf::Text text;
                text.setFont(font);
@@ -232,16 +250,12 @@ int main()
                text.setOrigin(textRect.left + textRect.width/2.0f,
                               textRect.top  + textRect.height/2.0f);
                text.setPosition((y+0.5)*TILE_SIZE, (x+0.5)*TILE_SIZE);
+               text.setColor(sf::Color::Red);
 
-               if (gol.isVolatile(x,y)) {
-                  text.setColor(sf::Color::Yellow);
-               } else {
-                  text.setColor(sf::Color::Red);
-               }
                window.draw(text);
                break;
             }
-            case Two:
+            case P1_Two:
             {
                sf::Text text;
                text.setFont(font);
@@ -254,15 +268,11 @@ int main()
                               textRect.top  + textRect.height/2.0f);
                text.setPosition((y+0.5)*TILE_SIZE, (x+0.5)*TILE_SIZE);
 
-               if (gol.isVolatile(x,y)) {
-                  text.setColor(sf::Color::Yellow);
-               } else {
-                  text.setColor(sf::Color::Red);
-               }
+               text.setColor(sf::Color::Red);
                window.draw(text);
                break;
             }
-            case Three:
+            case P1_Three:
             {
                sf::Text text;
                text.setFont(font);
@@ -275,25 +285,81 @@ int main()
                               textRect.top  + textRect.height/2.0f);
                text.setPosition((y+0.5)*TILE_SIZE, (x+0.5)*TILE_SIZE);
 
-               if (gol.isVolatile(x,y)) {
-                  text.setColor(sf::Color::Yellow);
-               } else {
-                  text.setColor(sf::Color::Red);
-               }
+               text.setColor(sf::Color::Red);
+               window.draw(text);
+               break;
+            }
+            case P1_V_One:
+            {
+               sf::Text text;
+               text.setFont(font);
+               text.setString("1");
+               text.setCharacterSize(TILE_SIZE);
+
+               //center text
+               sf::FloatRect textRect = text.getLocalBounds();
+               text.setOrigin(textRect.left + textRect.width/2.0f,
+                              textRect.top  + textRect.height/2.0f);
+               text.setPosition((y+0.5)*TILE_SIZE, (x+0.5)*TILE_SIZE);
+
+               text.setColor(sf::Color::Yellow);
+               window.draw(text);
+               break;
+            }
+            case P1_V_Two:
+            {
+               sf::Text text;
+               text.setFont(font);
+               text.setString("2");
+               text.setCharacterSize(TILE_SIZE);
+
+               //center text
+               sf::FloatRect textRect = text.getLocalBounds();
+               text.setOrigin(textRect.left + textRect.width/2.0f,
+                              textRect.top  + textRect.height/2.0f);
+               text.setPosition((y+0.5)*TILE_SIZE, (x+0.5)*TILE_SIZE);
+
+               text.setColor(sf::Color::Yellow);
+               window.draw(text);
+               break;
+            }
+            case P1_V_Three:
+            {
+               sf::Text text;
+               text.setFont(font);
+               text.setString("3");
+               text.setCharacterSize(TILE_SIZE);
+
+               //center text
+               sf::FloatRect textRect = text.getLocalBounds();
+               text.setOrigin(textRect.left + textRect.width/2.0f,
+                              textRect.top  + textRect.height/2.0f);
+               text.setPosition((y+0.5)*TILE_SIZE, (x+0.5)*TILE_SIZE);
+
+               text.setColor(sf::Color::Yellow);
+               window.draw(text);
+               break;
+            }
+            case Explosion:
+            {
+               sf::Text text;
+               text.setFont(font);
+               text.setString("*");
+               text.setCharacterSize(TILE_SIZE);
+
+               //center text
+               sf::FloatRect textRect = text.getLocalBounds();
+               text.setOrigin(textRect.left + textRect.width/2.0f,
+                              textRect.top  + textRect.height/2.0f);
+               text.setPosition((y+0.5)*TILE_SIZE, (x+0.5)*TILE_SIZE);
+
+               text.setColor(sf::Color::Yellow);
                window.draw(text);
                break;
             }
             }
          }
       }
-      sf::Time elapsed = messageClock.getElapsedTime();
-      if (elapsed.asSeconds() < 2.0f) {
-         // sf::RectangleShape shape(sf::Vector2f(TILE_SIZE, TILE_SIZE));
-         // shape.setPosition((y+1)*TILE_SIZE, (x+1)*TILE_SIZE);
-         // shape.setFillColor(sf::Color::Red);
-         // window.draw(shape);
-      }
-
       window.display();
    }
 
