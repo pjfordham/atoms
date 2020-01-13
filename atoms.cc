@@ -247,7 +247,9 @@ class VolatileNumber : public Animation {
    virtual void draw( sf::RenderTarget &target, sf::RenderStates states, int frame ) const {
       sf::RectangleShape shape(sf::Vector2f(TILE_SIZE, TILE_SIZE));
       shape.setPosition(y,x);
-      shape.setFillColor( sf::Color( frame*4, frame*4, 0 ) );
+      if ( frame >= 25 )
+         frame = 50 - frame;
+      shape.setFillColor( sf::Color( frame*9, frame*9, 0 ) );
       target.draw(shape);
 
       sf::Text text;
