@@ -233,6 +233,7 @@ public:
 class VolatileNumber : public Animation {
    sf::Font font;
    sf::Color color;
+   mutable sf::Sprite background;
    int number;
    int x;
    int y;
@@ -242,17 +243,13 @@ class VolatileNumber : public Animation {
       y = _y;
    }
 
-   VolatileNumber( sf::Font _font, sf::Color _color, int _number ) :
-      Animation( 50, 50 ), font( _font ), color( _color), number( _number ), y(0), x(0) {
+   VolatileNumber( sf::Font _font, sf::Color _color, int _number, sf::Sprite _background ) :
+      Animation( 50, 50 ), font( _font ), color( _color), background( _background), number( _number ), y(0), x(0) {
    }
 
    virtual void draw( sf::RenderTarget &target, sf::RenderStates states, int frame ) const {
-      sf::RectangleShape shape(sf::Vector2f(TILE_SIZE, TILE_SIZE));
-      shape.setPosition(y,x);
-      if ( frame >= 25 )
-         frame = 50 - frame;
-      shape.setFillColor( sf::Color( frame*9, frame*9, 0 ) );
-      target.draw(shape);
+      background.setPosition( y, x );
+      target.draw(background);
 
       sf::Text text;
       text.setFont(font);
@@ -265,7 +262,13 @@ class VolatileNumber : public Animation {
                      textRect.top  + textRect.height/2.0f);
       text.setPosition(y+(0.5*TILE_SIZE), x+(0.5*TILE_SIZE));
 
-      text.setColor(color);
+      if ( frame >= 25 )
+         frame = 50 - frame;
+      auto brightness = sf::Color(9 * frame, 9* frame, 9 * frame );
+      auto dimness = sf::Color(9 * (25 - frame), 9* (25-frame), 9 * (25-frame) );
+
+      text.setColor( sf::Color::Yellow * brightness + color * dimness );
+
       target.draw(text);
    }
 };
@@ -275,6 +278,7 @@ class Explosion : public Animation {
    int y;
    sf::Texture explosionTexture;
    mutable sf::Sprite explosionSprite[12];
+   mutable sf::Sprite background;
 
 public:
    void setPosition(int _y, int _x) {
@@ -282,7 +286,7 @@ public:
       y = _y;
    }
 
-   Explosion() : Animation( 12,12 ), y(0), x(0) {
+   Explosion( sf::Sprite _background) : Animation( 12,12 ), y(0), x(0), background( _background ) {
       if (!explosionTexture.loadFromFile("explosion.png"))
       {
          std::cerr << "Texture error." << std::endl;
@@ -296,6 +300,8 @@ public:
    };
 
    virtual void draw( sf::RenderTarget &target, sf::RenderStates states, int frame ) const {
+      background.setPosition( y, x );
+      target.draw(background);
       explosionSprite[ frame ].setPosition(y, x);
       target.draw( explosionSprite[ frame] );
    }
@@ -347,20 +353,20 @@ public:
 
    sf::Clock clock;
 
-   VolatileNumber p1vone( font, sf::Color::Red, 1);
-   VolatileNumber p2vone( font, sf::Color::Green, 1);
-   VolatileNumber p3vone( font, sf::Color::Blue, 1);
-   VolatileNumber p4vone( font, sf::Color::White, 1);
-   VolatileNumber p1vtwo( font, sf::Color::Red, 2);
-   VolatileNumber p2vtwo( font, sf::Color::Green, 2);
-   VolatileNumber p3vtwo( font, sf::Color::Blue, 2);
-   VolatileNumber p4vtwo( font, sf::Color::White, 2);
-   VolatileNumber p1vthree( font, sf::Color::Red, 3);
-   VolatileNumber p2vthree( font, sf::Color::Green, 3);
-   VolatileNumber p3vthree( font, sf::Color::Blue, 3);
-   VolatileNumber p4vthree( font, sf::Color::White, 3);
+   VolatileNumber p1vone( font, sf::Color::Red, 1, woodSprite);
+   VolatileNumber p2vone( font, sf::Color::Green, 1, woodSprite);
+   VolatileNumber p3vone( font, sf::Color::Blue, 1, woodSprite);
+   VolatileNumber p4vone( font, sf::Color::White, 1, woodSprite);
+   VolatileNumber p1vtwo( font, sf::Color::Red, 2, woodSprite);
+   VolatileNumber p2vtwo( font, sf::Color::Green, 2, woodSprite);
+   VolatileNumber p3vtwo( font, sf::Color::Blue, 2, woodSprite);
+   VolatileNumber p4vtwo( font, sf::Color::White, 2, woodSprite);
+   VolatileNumber p1vthree( font, sf::Color::Red, 3, woodSprite);
+   VolatileNumber p2vthree( font, sf::Color::Green, 3, woodSprite);
+   VolatileNumber p3vthree( font, sf::Color::Blue, 3, woodSprite);
+   VolatileNumber p4vthree( font, sf::Color::White, 3, woodSprite);
 
-   Explosion explosion;
+   Explosion explosion( woodSprite );
 
    drawables[ Bang ] = &explosion;
    drawables[ P1_V_One ] = &p1vone;
@@ -445,7 +451,10 @@ public:
             case P3_One:
             case P4_One:
             {
+               woodSprite.setPosition( y*TILE_SIZE, x*TILE_SIZE );
+               window.draw(woodSprite);
                sf::Text text;
+
                text.setFont(font);
                text.setString("1");
                text.setCharacterSize(TILE_SIZE);
@@ -469,6 +478,9 @@ public:
             case P3_Two:
             case P4_Two:
             {
+               woodSprite.setPosition( y*TILE_SIZE, x*TILE_SIZE );
+               window.draw(woodSprite);
+
                sf::Text text;
                text.setFont(font);
                text.setString("2");
@@ -493,6 +505,8 @@ public:
             case P3_Three:
             case P4_Three:
             {
+               woodSprite.setPosition( y*TILE_SIZE, x*TILE_SIZE );
+               window.draw(woodSprite);
                sf::Text text;
                text.setFont(font);
                text.setString("3");
