@@ -15,7 +15,7 @@ const float TILE_SIZE = 50.0f;
 
 enum draw_t {
    // Map Elements
-   Wall, Corner, Edge, Empty, Explosion,
+   Wall, Corner, Edge, Empty, Bang,
 
    // Player One
    P1_One, P1_Two, P1_Three,
@@ -192,7 +192,7 @@ draw_t Atoms::getContent(int i, int j) {
          case 2: return isVolatile ? P3_V_Three : P3_Three;
          case 3: return isVolatile ? P4_V_Three : P4_Three;
          }
-      default: return Explosion;
+      default: return Bang;
       }
    }
 }
@@ -268,7 +268,40 @@ class VolatileNumber : public Animation {
    }
 };
 
-int main()
+class Explosion : public Animation {
+   int x;
+   int y;
+   sf::Texture explosionTexture;
+   mutable sf::Sprite explosionSprite[12];
+
+public:
+   void setPosition(int _y, int _x) {
+      x = _x;
+      y = _y;
+   }
+
+   Explosion() : Animation( 12,12 ), y(0), x(0) {
+      if (!explosionTexture.loadFromFile("explosion.png"))
+      {
+         std::cerr << "Texture error." << std::endl;
+         exit( -1 );
+      }
+
+      for( int i = 0; i<12 ; i++ ){
+         explosionSprite[i] = sf::Sprite( explosionTexture, sf::IntRect(i * 96,0,96,96) );
+         explosionSprite[i].scale( (float) TILE_SIZE / (float) 96, (float)TILE_SIZE / 96 );
+      }
+   };
+
+   virtual void draw( sf::RenderTarget &target, sf::RenderStates states, int frame ) const {
+      explosionSprite[ frame ].setPosition(y, x);
+      target.draw( explosionSprite[ frame] );
+   }
+
+};
+
+
+ int main()
 {
    Atoms atoms;
 
@@ -304,31 +337,6 @@ int main()
    woodSprite.setTexture(woodTexture);
    woodSprite.scale( (float) TILE_SIZE / (float) woodSize.x, (float)TILE_SIZE / woodSize.y );
 
-   sf::Texture explosionTexture;
-   if (!explosionTexture.loadFromFile("explosion.png"))
-   {
-      std::cerr << "Texture error." << std::endl;
-      exit( -1 );
-   }
-
-   sf::Vector2u explosionSize = explosionTexture.getSize();
-
-   sf::Sprite explosionSprite[12] = {
-      sf::Sprite( explosionTexture, sf::IntRect(0 * 96,0,96,96) ),
-      sf::Sprite( explosionTexture, sf::IntRect(1 * 96,0,96,96) ),
-      sf::Sprite( explosionTexture, sf::IntRect(2 * 96,0,96,96) ),
-      sf::Sprite( explosionTexture, sf::IntRect(3 * 96,0,96,96) ),
-      sf::Sprite( explosionTexture, sf::IntRect(4 * 96,0,96,96) ),
-      sf::Sprite( explosionTexture, sf::IntRect(5 * 96,0,96,96) ),
-      sf::Sprite( explosionTexture, sf::IntRect(6 * 96,0,96,96) ),
-      sf::Sprite( explosionTexture, sf::IntRect(7 * 96,0,96,96) ),
-      sf::Sprite( explosionTexture, sf::IntRect(8 * 96,0,96,96) ),
-      sf::Sprite( explosionTexture, sf::IntRect(9 * 96,0,96,96) ),
-      sf::Sprite( explosionTexture, sf::IntRect(10 * 96,0,96,96) ),
-      sf::Sprite( explosionTexture, sf::IntRect(11 * 96,0,96,96) ),
-   };
-
-   explosionSprite[3].scale( (float) TILE_SIZE / (float) 96, (float)TILE_SIZE / 96 );
 
 
    sf::RenderWindow window(sf::VideoMode(BOARD_SIZE * (int)TILE_SIZE, BOARD_SIZE * (int)TILE_SIZE), "Atoms");
@@ -348,11 +356,13 @@ int main()
    VolatileNumber p3vthree( font, sf::Color::Blue, 3);
    VolatileNumber p4vthree( font, sf::Color::White, 3);
 
+   Explosion explosion;
+
    bool running = false;
    while (window.isOpen()) {
       if ( !atoms.finished ) {
          sf::Time elapsed = clock.getElapsedTime();
-         if (elapsed.asSeconds() > 0.05f) {
+         if (elapsed.asSeconds() > 0.1f) {
             atoms.recalculateBoard();
             clock.restart();
          }
@@ -532,9 +542,9 @@ int main()
                p4vthree.setPosition( y*TILE_SIZE, x*TILE_SIZE );
                window.draw( p4vthree );
                break;
-            case Explosion:
-               explosionSprite[3].setPosition( y*TILE_SIZE, x*TILE_SIZE );
-               window.draw(explosionSprite[3]);
+            case Bang:
+               explosion.setPosition( y*TILE_SIZE, x*TILE_SIZE );
+               window.draw( explosion );
             }
          }
       }
