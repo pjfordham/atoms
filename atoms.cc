@@ -251,6 +251,20 @@ public:
 
 };
 
+class RectangleShapeElement : public Element {
+   sf::Color color;
+public:
+   RectangleShapeElement( sf::Color _color ) : color( _color ) {
+   }
+   
+   virtual void draw( sf::RenderTarget &target, sf::RenderStates states ) const {
+      states.transform *= getTransform();
+      sf::RectangleShape shape(sf::Vector2f(TILE_SIZE, TILE_SIZE));
+      shape.setFillColor( color );
+      target.draw(shape, states);
+   }
+};
+
 class Animation : public Element {
    sf::Clock masterClock;
    int frameRate;
@@ -420,7 +434,11 @@ int main()
    SpriteElement wall( stoneSprite );
    SpriteElement empty( woodSprite );
    Explosion explosion( woodSprite );
+   RectangleShapeElement corner( sf::Color::Red );
+   RectangleShapeElement edge( sf::Color::Yellow );
 
+   drawables[ Corner ] = &corner;
+   drawables[ Edge ] = &edge;
    drawables[ Wall ] = &wall;
    drawables[ Empty ] = &empty;
    drawables[ Bang ] = &explosion;
@@ -490,29 +508,9 @@ int main()
 
       for( int x=0;x<BOARD_SIZE;x++ ){
          for ( int y = 0;y<BOARD_SIZE;y++) {
-            switch (atoms.getContent(x, y)) {
-            case Edge:
-            {
-               sf::RectangleShape shape(sf::Vector2f(TILE_SIZE, TILE_SIZE));
-               shape.setPosition(y*TILE_SIZE, x*TILE_SIZE);
-               shape.setFillColor(sf::Color::Yellow);
-               window.draw(shape);
-               break;
-            }
-            case Corner:
-            {
-               sf::RectangleShape shape(sf::Vector2f(TILE_SIZE, TILE_SIZE));
-               shape.setPosition(y*TILE_SIZE, x*TILE_SIZE);
-               shape.setFillColor(sf::Color::Red); break;
-               window.draw(shape);
-               break;
-            }
-            default:
-               auto &cell = *drawables[ atoms.getContent(x, y) ];
-               cell.setPosition( y*TILE_SIZE, x*TILE_SIZE );
-               window.draw( cell );
-               break;
-            }
+            auto &cell = *drawables[ atoms.getContent(x, y) ];
+            cell.setPosition( y*TILE_SIZE, x*TILE_SIZE );
+            window.draw( cell );
          }
       }
       window.display();
