@@ -197,7 +197,7 @@ draw_t Atoms::getContent(int i, int j) {
    }
 }
 
-class Animation : public sf::Drawable {
+class Animation : public sf::Drawable, public sf::Transformable {
    sf::Clock masterClock;
    int frameRate;
    sf::Time startTime;
@@ -220,11 +220,10 @@ public:
 
    }
 
-   virtual void setPosition(int _y, int _x) = 0;
- 
    virtual void draw( sf::RenderTarget &target, sf::RenderStates states, int frame ) const = 0;
 
    virtual void draw( sf::RenderTarget &target, sf::RenderStates states ) const {
+      states.transform *= getTransform();
       draw( target, states, getCurrentFrame() );
    }
 
@@ -235,21 +234,14 @@ class VolatileNumber : public Animation {
    sf::Color color;
    mutable sf::Sprite background;
    int number;
-   int x;
-   int y;
    public:
-   void setPosition(int _y, int _x) {
-      x = _x;
-      y = _y;
-   }
 
    VolatileNumber( sf::Font _font, sf::Color _color, int _number, sf::Sprite _background ) :
-      Animation( 50, 50 ), font( _font ), color( _color), background( _background), number( _number ), y(0), x(0) {
+      Animation( 50, 50 ), font( _font ), color( _color), background( _background), number( _number ) {
    }
 
    virtual void draw( sf::RenderTarget &target, sf::RenderStates states, int frame ) const {
-      background.setPosition( y, x );
-      target.draw(background);
+      target.draw(background, states);
 
       sf::Text text;
       text.setFont(font);
@@ -260,7 +252,7 @@ class VolatileNumber : public Animation {
       sf::FloatRect textRect = text.getLocalBounds();
       text.setOrigin(textRect.left + textRect.width/2.0f,
                      textRect.top  + textRect.height/2.0f);
-      text.setPosition(y+(0.5*TILE_SIZE), x+(0.5*TILE_SIZE));
+      text.move((0.5*TILE_SIZE), (0.5*TILE_SIZE));
 
       if ( frame >= 25 )
          frame = 50 - frame;
@@ -269,24 +261,18 @@ class VolatileNumber : public Animation {
 
       text.setColor( sf::Color::Yellow * brightness + color * dimness );
 
-      target.draw(text);
+      target.draw(text,states);
    }
 };
 
 class Explosion : public Animation {
-   int x;
-   int y;
    sf::Texture explosionTexture;
    mutable sf::Sprite explosionSprite[12];
    mutable sf::Sprite background;
 
 public:
-   void setPosition(int _y, int _x) {
-      x = _x;
-      y = _y;
-   }
 
-   Explosion( sf::Sprite _background) : Animation( 12,12 ), y(0), x(0), background( _background ) {
+   Explosion( sf::Sprite _background) : Animation( 12,12 ), background( _background ) {
       if (!explosionTexture.loadFromFile("explosion.png"))
       {
          std::cerr << "Texture error." << std::endl;
@@ -300,16 +286,14 @@ public:
    };
 
    virtual void draw( sf::RenderTarget &target, sf::RenderStates states, int frame ) const {
-      background.setPosition( y, x );
-      target.draw(background);
-      explosionSprite[ frame ].setPosition(y, x);
-      target.draw( explosionSprite[ frame] );
+      target.draw(background, states);
+      target.draw( explosionSprite[ frame], states );
    }
 
 };
 
 
- int main()
+int main()
 {
    Atoms atoms;
 
