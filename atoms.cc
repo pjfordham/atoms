@@ -278,6 +278,33 @@ int main()
       exit( -1 );
    }
 
+   sf::Texture stoneTexture;
+   if (!stoneTexture.loadFromFile("stone.gif"))
+   {
+      std::cerr << "Texture error." << std::endl;
+      exit( -1 );
+   }
+
+   sf::Vector2u stoneSize = stoneTexture.getSize();
+
+   sf::Sprite stoneSprite;
+   stoneSprite.setTexture(stoneTexture);
+   stoneSprite.scale( (float) TILE_SIZE / (float) stoneSize.x, (float)TILE_SIZE / stoneSize.y );
+
+   sf::Texture woodTexture;
+   if (!woodTexture.loadFromFile("wood.gif"))
+   {
+      std::cerr << "Texture error." << std::endl;
+      exit( -1 );
+   }
+
+   sf::Vector2u woodSize = woodTexture.getSize();
+
+   sf::Sprite woodSprite;
+   woodSprite.setTexture(woodTexture);
+   woodSprite.scale( (float) TILE_SIZE / (float) woodSize.x, (float)TILE_SIZE / woodSize.y );
+
+
    sf::RenderWindow window(sf::VideoMode(BOARD_SIZE * (int)TILE_SIZE, BOARD_SIZE * (int)TILE_SIZE), "Atoms");
 
    sf::Clock clock;
@@ -338,6 +365,9 @@ int main()
          for ( int y = 0;y<BOARD_SIZE;y++) {
             switch (atoms.getContent(x, y)) {
             case Wall:
+               stoneSprite.setPosition( y*TILE_SIZE, x*TILE_SIZE );
+               window.draw(stoneSprite);
+               break;
             case Edge:
             case Corner:
             {
@@ -353,6 +383,8 @@ int main()
                break;
             }
             case Empty:
+               woodSprite.setPosition( y*TILE_SIZE, x*TILE_SIZE );
+               window.draw(woodSprite);
                break;
             case P1_One:
             case P2_One:
