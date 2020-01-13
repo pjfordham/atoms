@@ -1,3 +1,4 @@
+#include <memory>
 #include <tuple>
 #include <string.h>
 #include <iostream>
@@ -32,6 +33,8 @@ enum draw_t {
    // Player Four
    P4_One, P4_Two, P4_Three,
    P4_V_One, P4_V_Two, P4_V_Three,
+
+   draw_t_size
 };
 
 class Atoms {
@@ -365,8 +368,6 @@ int main()
 {
    Atoms atoms;
 
-   std::map<draw_t, Element*> drawables;
-
    sf::Font font;
    if (!font.loadFromFile("Instruction.ttf") ) {
       std::cerr << "Font error." << std::endl;
@@ -399,73 +400,41 @@ int main()
    woodSprite.setTexture(woodTexture);
    woodSprite.scale( (float) TILE_SIZE / (float) woodSize.x, (float)TILE_SIZE / woodSize.y );
 
-
-
    sf::RenderWindow window(sf::VideoMode(BOARD_SIZE * (int)TILE_SIZE, BOARD_SIZE * (int)TILE_SIZE), "Atoms");
 
    sf::Clock clock;
 
-   VolatileNumber p1vone( font, sf::Color::Red, 1, woodSprite);
-   VolatileNumber p2vone( font, sf::Color::Green, 1, woodSprite);
-   VolatileNumber p3vone( font, sf::Color::Blue, 1, woodSprite);
-   VolatileNumber p4vone( font, sf::Color::White, 1, woodSprite);
-   VolatileNumber p1vtwo( font, sf::Color::Red, 2, woodSprite);
-   VolatileNumber p2vtwo( font, sf::Color::Green, 2, woodSprite);
-   VolatileNumber p3vtwo( font, sf::Color::Blue, 2, woodSprite);
-   VolatileNumber p4vtwo( font, sf::Color::White, 2, woodSprite);
-   VolatileNumber p1vthree( font, sf::Color::Red, 3, woodSprite);
-   VolatileNumber p2vthree( font, sf::Color::Green, 3, woodSprite);
-   VolatileNumber p3vthree( font, sf::Color::Blue, 3, woodSprite);
-   VolatileNumber p4vthree( font, sf::Color::White, 3, woodSprite);
+   std::array<std::shared_ptr<Element>,draw_t_size > drawables;
 
-   Number p1one( font, sf::Color::Red, 1, woodSprite);
-   Number p2one( font, sf::Color::Green, 1, woodSprite);
-   Number p3one( font, sf::Color::Blue, 1, woodSprite);
-   Number p4one( font, sf::Color::White, 1, woodSprite);
-   Number p1two( font, sf::Color::Red, 2, woodSprite);
-   Number p2two( font, sf::Color::Green, 2, woodSprite);
-   Number p3two( font, sf::Color::Blue, 2, woodSprite);
-   Number p4two( font, sf::Color::White, 2, woodSprite);
-   Number p1three( font, sf::Color::Red, 3, woodSprite);
-   Number p2three( font, sf::Color::Green, 3, woodSprite);
-   Number p3three( font, sf::Color::Blue, 3, woodSprite);
-   Number p4three( font, sf::Color::White, 3, woodSprite);
-
-   SpriteElement wall( stoneSprite );
-   SpriteElement empty( woodSprite );
-   Explosion explosion( woodSprite );
-   RectangleShapeElement corner( sf::Color::Red );
-   RectangleShapeElement edge( sf::Color::Yellow );
-
-   drawables[ Corner ] = &corner;
-   drawables[ Edge ] = &edge;
-   drawables[ Wall ] = &wall;
-   drawables[ Empty ] = &empty;
-   drawables[ Bang ] = &explosion;
-   drawables[ P1_One ] = &p1one;
-   drawables[ P2_One ] = &p2one;
-   drawables[ P3_One ] = &p3one;
-   drawables[ P4_One ] = &p4one;
-   drawables[ P1_Two ] = &p1two;
-   drawables[ P2_Two ] = &p2two;
-   drawables[ P3_Two ] = &p3two;
-   drawables[ P4_Two ] = &p4two;
-   drawables[ P1_Three ] = &p1three;
-   drawables[ P2_Three ] = &p2three;
-   drawables[ P3_Three ] = &p3three;
-   drawables[ P4_Three ] = &p4three;
-   drawables[ P1_V_One ] = &p1vone;
-   drawables[ P2_V_One ] = &p2vone;
-   drawables[ P3_V_One ] = &p3vone;
-   drawables[ P4_V_One ] = &p4vone;
-   drawables[ P1_V_Two ] = &p1vtwo;
-   drawables[ P2_V_Two ] = &p2vtwo;
-   drawables[ P3_V_Two ] = &p3vtwo;
-   drawables[ P4_V_Two ] = &p4vtwo;
-   drawables[ P1_V_Three ] = &p1vthree;
-   drawables[ P2_V_Three ] = &p2vthree;
-   drawables[ P3_V_Three ] = &p3vthree;
-   drawables[ P4_V_Three ] = &p4vthree;
+   drawables[ Corner ] = std::shared_ptr<Element>( new RectangleShapeElement( sf::Color::Red ));
+   drawables[ Edge ] =   std::shared_ptr<Element>( new RectangleShapeElement( sf::Color::Yellow ));
+   drawables[ Wall ] =   std::shared_ptr<Element>( new SpriteElement( stoneSprite ));
+   drawables[ Empty ] =  std::shared_ptr<Element>( new SpriteElement( woodSprite ));
+   drawables[ Bang ] =   std::shared_ptr<Element>( new Explosion( woodSprite ));
+   drawables[ P1_One ] = std::shared_ptr<Element>( new Number( font, sf::Color::Red, 1, woodSprite));
+   drawables[ P2_One ] = std::shared_ptr<Element>( new Number( font, sf::Color::Green, 1, woodSprite));
+   drawables[ P3_One ] = std::shared_ptr<Element>( new Number( font, sf::Color::Blue, 1, woodSprite));
+   drawables[ P4_One ] = std::shared_ptr<Element>( new Number( font, sf::Color::White, 1, woodSprite));
+   drawables[ P1_Two ] = std::shared_ptr<Element>( new Number( font, sf::Color::Red, 2, woodSprite));
+   drawables[ P2_Two ] = std::shared_ptr<Element>( new Number( font, sf::Color::Green, 2, woodSprite));
+   drawables[ P3_Two ] = std::shared_ptr<Element>( new Number( font, sf::Color::Blue, 2, woodSprite));
+   drawables[ P4_Two ] = std::shared_ptr<Element>( new Number( font, sf::Color::White, 2, woodSprite));
+   drawables[ P1_Three ] = std::shared_ptr<Element>( new Number( font, sf::Color::Red, 3, woodSprite));
+   drawables[ P2_Three ] = std::shared_ptr<Element>( new Number( font, sf::Color::Green, 3, woodSprite));
+   drawables[ P3_Three ] = std::shared_ptr<Element>( new Number( font, sf::Color::Blue, 3, woodSprite));
+   drawables[ P4_Three ] = std::shared_ptr<Element>( new Number( font, sf::Color::White, 3, woodSprite));
+   drawables[ P1_V_One ] = std::shared_ptr<Element>( new VolatileNumber( font, sf::Color::Red, 1, woodSprite));
+   drawables[ P2_V_One ] = std::shared_ptr<Element>( new VolatileNumber( font, sf::Color::Green, 1, woodSprite));
+   drawables[ P3_V_One ] = std::shared_ptr<Element>( new VolatileNumber( font, sf::Color::Blue, 1, woodSprite));
+   drawables[ P4_V_One ] = std::shared_ptr<Element>( new VolatileNumber( font, sf::Color::White, 1, woodSprite));
+   drawables[ P1_V_Two ] = std::shared_ptr<Element>( new VolatileNumber( font, sf::Color::Red, 2, woodSprite));
+   drawables[ P2_V_Two ] = std::shared_ptr<Element>( new VolatileNumber( font, sf::Color::Green, 2, woodSprite));
+   drawables[ P3_V_Two ] = std::shared_ptr<Element>( new VolatileNumber( font, sf::Color::Blue, 2, woodSprite));
+   drawables[ P4_V_Two ] = std::shared_ptr<Element>( new VolatileNumber( font, sf::Color::White, 2, woodSprite));
+   drawables[ P1_V_Three ] = std::shared_ptr<Element>( new VolatileNumber( font, sf::Color::Red, 3, woodSprite));
+   drawables[ P2_V_Three ] = std::shared_ptr<Element>( new VolatileNumber( font, sf::Color::Green, 3, woodSprite));
+   drawables[ P3_V_Three ] = std::shared_ptr<Element>( new VolatileNumber( font, sf::Color::Blue, 3, woodSprite));
+   drawables[ P4_V_Three ] = std::shared_ptr<Element>( new VolatileNumber( font, sf::Color::White, 3, woodSprite));
 
    bool running = false;
    while (window.isOpen()) {
