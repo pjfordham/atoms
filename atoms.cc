@@ -3,7 +3,7 @@
 #include <iostream>
 #include <SFML/Graphics.hpp>
 #include <string>
-
+#include <map>
 
 #include <iostream>
 
@@ -220,6 +220,8 @@ public:
 
    }
 
+   virtual void setPosition(int _y, int _x) = 0;
+ 
    virtual void draw( sf::RenderTarget &target, sf::RenderStates states, int frame ) const = 0;
 
    virtual void draw( sf::RenderTarget &target, sf::RenderStates states ) const {
@@ -305,6 +307,8 @@ public:
 {
    Atoms atoms;
 
+   std::map<draw_t, Animation*> drawables;
+
    sf::Font font;
    if (!font.loadFromFile("Instruction.ttf") ) {
       std::cerr << "Font error." << std::endl;
@@ -357,6 +361,20 @@ public:
    VolatileNumber p4vthree( font, sf::Color::White, 3);
 
    Explosion explosion;
+
+   drawables[ Bang ] = &explosion;
+   drawables[ P1_V_One ] = &p1vone;
+   drawables[ P2_V_One ] = &p2vone;
+   drawables[ P3_V_One ] = &p3vone;
+   drawables[ P4_V_One ] = &p4vone;
+   drawables[ P1_V_Two ] = &p1vtwo;
+   drawables[ P2_V_Two ] = &p2vtwo;
+   drawables[ P3_V_Two ] = &p3vtwo;
+   drawables[ P4_V_Two ] = &p4vtwo;
+   drawables[ P1_V_Three ] = &p1vthree;
+   drawables[ P2_V_Three ] = &p2vthree;
+   drawables[ P3_V_Three ] = &p3vthree;
+   drawables[ P4_V_Three ] = &p4vthree;
 
    bool running = false;
    while (window.isOpen()) {
@@ -494,57 +512,11 @@ public:
                window.draw(text);
                break;
             }
-            case P1_V_One:
-               p1vone.setPosition( y*TILE_SIZE, x*TILE_SIZE );
-               window.draw( p1vone );
+            default:
+               Animation &cell = *drawables[ atoms.getContent(x, y) ];
+               cell.setPosition( y*TILE_SIZE, x*TILE_SIZE );
+               window.draw( cell );
                break;
-            case P2_V_One:
-               p2vone.setPosition( y*TILE_SIZE, x*TILE_SIZE );
-               window.draw( p2vone );
-               break;
-            case P3_V_One:
-               p3vone.setPosition( y*TILE_SIZE, x*TILE_SIZE );
-               window.draw( p3vone );
-               break;
-            case P4_V_One:
-               p4vone.setPosition( y*TILE_SIZE, x*TILE_SIZE );
-               window.draw( p4vone );
-               break;
-            case P1_V_Two:
-               p1vtwo.setPosition( y*TILE_SIZE, x*TILE_SIZE );
-               window.draw( p1vtwo );
-               break;
-            case P2_V_Two:
-               p2vtwo.setPosition( y*TILE_SIZE, x*TILE_SIZE );
-               window.draw( p2vtwo );
-               break;
-            case P3_V_Two:
-               p3vtwo.setPosition( y*TILE_SIZE, x*TILE_SIZE );
-               window.draw( p3vtwo );
-               break;
-            case P4_V_Two:
-               p4vtwo.setPosition( y*TILE_SIZE, x*TILE_SIZE );
-               window.draw( p4vtwo );
-               break;
-            case P1_V_Three:
-               p1vthree.setPosition( y*TILE_SIZE, x*TILE_SIZE );
-               window.draw( p1vthree );
-               break;
-            case P2_V_Three:
-               p2vthree.setPosition( y*TILE_SIZE, x*TILE_SIZE );
-               window.draw( p2vthree );
-               break;
-            case P3_V_Three:
-               p3vthree.setPosition( y*TILE_SIZE, x*TILE_SIZE );
-               window.draw( p3vthree );
-               break;
-            case P4_V_Three:
-               p4vthree.setPosition( y*TILE_SIZE, x*TILE_SIZE );
-               window.draw( p4vthree );
-               break;
-            case Bang:
-               explosion.setPosition( y*TILE_SIZE, x*TILE_SIZE );
-               window.draw( explosion );
             }
          }
       }
