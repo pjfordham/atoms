@@ -198,7 +198,44 @@ draw_t Atoms::getContent(int i, int j) {
    }
 }
 
-class Animation : public sf::Drawable, public sf::Transformable {
+class Element : public sf::Drawable, public sf::Transformable {
+};
+
+class Number : public Element {
+   sf::Font font;
+   sf::Color color;
+   mutable sf::Sprite background;
+   int number;
+   public:
+
+public:
+   Number( sf::Font _font, sf::Color _color, int _number, sf::Sprite _background ) :
+      font( _font ), color( _color), background( _background), number( _number ) {
+   }
+
+   virtual void draw( sf::RenderTarget &target, sf::RenderStates states ) const {
+      states.transform *= getTransform();
+      target.draw(background, states);
+
+      sf::Text text;
+      text.setFont(font);
+      text.setString(std::to_string( number ));
+      text.setCharacterSize(TILE_SIZE);
+
+      // center text
+      sf::FloatRect textRect = text.getLocalBounds();
+      text.setOrigin(textRect.left + textRect.width/2.0f,
+                     textRect.top  + textRect.height/2.0f);
+      text.move((0.5*TILE_SIZE), (0.5*TILE_SIZE));
+
+      text.setColor( color );
+
+      target.draw(text,states);
+   }
+
+};
+
+class Animation : public Element {
    sf::Clock masterClock;
    int frameRate;
    sf::Time startTime;
@@ -298,7 +335,7 @@ int main()
 {
    Atoms atoms;
 
-   std::map<draw_t, Animation*> drawables;
+   std::map<draw_t, Element*> drawables;
 
    sf::Font font;
    if (!font.loadFromFile("Instruction.ttf") ) {
@@ -351,9 +388,34 @@ int main()
    VolatileNumber p3vthree( font, sf::Color::Blue, 3, woodSprite);
    VolatileNumber p4vthree( font, sf::Color::White, 3, woodSprite);
 
+   Number p1one( font, sf::Color::Red, 1, woodSprite);
+   Number p2one( font, sf::Color::Green, 1, woodSprite);
+   Number p3one( font, sf::Color::Blue, 1, woodSprite);
+   Number p4one( font, sf::Color::White, 1, woodSprite);
+   Number p1two( font, sf::Color::Red, 2, woodSprite);
+   Number p2two( font, sf::Color::Green, 2, woodSprite);
+   Number p3two( font, sf::Color::Blue, 2, woodSprite);
+   Number p4two( font, sf::Color::White, 2, woodSprite);
+   Number p1three( font, sf::Color::Red, 3, woodSprite);
+   Number p2three( font, sf::Color::Green, 3, woodSprite);
+   Number p3three( font, sf::Color::Blue, 3, woodSprite);
+   Number p4three( font, sf::Color::White, 3, woodSprite);
+
    Explosion explosion( woodSprite );
 
    drawables[ Bang ] = &explosion;
+   drawables[ P1_One ] = &p1one;
+   drawables[ P2_One ] = &p2one;
+   drawables[ P3_One ] = &p3one;
+   drawables[ P4_One ] = &p4one;
+   drawables[ P1_Two ] = &p1two;
+   drawables[ P2_Two ] = &p2two;
+   drawables[ P3_Two ] = &p3two;
+   drawables[ P4_Two ] = &p4two;
+   drawables[ P1_Three ] = &p1three;
+   drawables[ P2_Three ] = &p2three;
+   drawables[ P3_Three ] = &p3three;
+   drawables[ P4_Three ] = &p4three;
    drawables[ P1_V_One ] = &p1vone;
    drawables[ P2_V_One ] = &p2vone;
    drawables[ P3_V_One ] = &p3vone;
@@ -431,88 +493,8 @@ int main()
                woodSprite.setPosition( y*TILE_SIZE, x*TILE_SIZE );
                window.draw(woodSprite);
                break;
-            case P1_One:
-            case P2_One:
-            case P3_One:
-            case P4_One:
-            {
-               woodSprite.setPosition( y*TILE_SIZE, x*TILE_SIZE );
-               window.draw(woodSprite);
-               sf::Text text;
-
-               text.setFont(font);
-               text.setString("1");
-               text.setCharacterSize(TILE_SIZE);
-
-               //center text
-               sf::FloatRect textRect = text.getLocalBounds();
-               text.setOrigin(textRect.left + textRect.width/2.0f,
-                              textRect.top  + textRect.height/2.0f);
-               text.setPosition((y+0.5)*TILE_SIZE, (x+0.5)*TILE_SIZE);
-               switch(atoms.getContent(x, y)) {
-               case P1_One: text.setColor(sf::Color::Red); break;
-               case P2_One: text.setColor(sf::Color::Green); break;
-               case P3_One: text.setColor(sf::Color::Blue); break;
-               default:     text.setColor(sf::Color::White); break;
-               }
-               window.draw(text);
-               break;
-            }
-            case P1_Two:
-            case P2_Two:
-            case P3_Two:
-            case P4_Two:
-            {
-               woodSprite.setPosition( y*TILE_SIZE, x*TILE_SIZE );
-               window.draw(woodSprite);
-
-               sf::Text text;
-               text.setFont(font);
-               text.setString("2");
-               text.setCharacterSize(TILE_SIZE);
-
-               //center text
-               sf::FloatRect textRect = text.getLocalBounds();
-               text.setOrigin(textRect.left + textRect.width/2.0f,
-                              textRect.top  + textRect.height/2.0f);
-               text.setPosition((y+0.5)*TILE_SIZE, (x+0.5)*TILE_SIZE);
-               switch(atoms.getContent(x, y)) {
-               case P1_Two: text.setColor(sf::Color::Red); break;
-               case P2_Two: text.setColor(sf::Color::Green); break;
-               case P3_Two: text.setColor(sf::Color::Blue); break;
-               default:     text.setColor(sf::Color::White); break;
-               }
-               window.draw(text);
-               break;
-            }
-            case P1_Three:
-            case P2_Three:
-            case P3_Three:
-            case P4_Three:
-            {
-               woodSprite.setPosition( y*TILE_SIZE, x*TILE_SIZE );
-               window.draw(woodSprite);
-               sf::Text text;
-               text.setFont(font);
-               text.setString("3");
-               text.setCharacterSize(TILE_SIZE);
-
-               //center text
-               sf::FloatRect textRect = text.getLocalBounds();
-               text.setOrigin(textRect.left + textRect.width/2.0f,
-                              textRect.top  + textRect.height/2.0f);
-               text.setPosition((y+0.5)*TILE_SIZE, (x+0.5)*TILE_SIZE);
-               switch(atoms.getContent(x, y)) {
-               case P1_Three: text.setColor(sf::Color::Red); break;
-               case P2_Three: text.setColor(sf::Color::Green); break;
-               case P3_Three: text.setColor(sf::Color::Blue); break;
-               default:     text.setColor(sf::Color::White); break;
-               }
-               window.draw(text);
-               break;
-            }
             default:
-               Animation &cell = *drawables[ atoms.getContent(x, y) ];
+               auto &cell = *drawables[ atoms.getContent(x, y) ];
                cell.setPosition( y*TILE_SIZE, x*TILE_SIZE );
                window.draw( cell );
                break;
