@@ -279,7 +279,7 @@ int main()
    }
 
    sf::Texture stoneTexture;
-   if (!stoneTexture.loadFromFile("stone.gif"))
+   if (!stoneTexture.loadFromFile("stone.png"))
    {
       std::cerr << "Texture error." << std::endl;
       exit( -1 );
@@ -292,7 +292,7 @@ int main()
    stoneSprite.scale( (float) TILE_SIZE / (float) stoneSize.x, (float)TILE_SIZE / stoneSize.y );
 
    sf::Texture woodTexture;
-   if (!woodTexture.loadFromFile("wood.gif"))
+   if (!woodTexture.loadFromFile("wood.png"))
    {
       std::cerr << "Texture error." << std::endl;
       exit( -1 );
@@ -303,6 +303,32 @@ int main()
    sf::Sprite woodSprite;
    woodSprite.setTexture(woodTexture);
    woodSprite.scale( (float) TILE_SIZE / (float) woodSize.x, (float)TILE_SIZE / woodSize.y );
+
+   sf::Texture explosionTexture;
+   if (!explosionTexture.loadFromFile("explosion.png"))
+   {
+      std::cerr << "Texture error." << std::endl;
+      exit( -1 );
+   }
+
+   sf::Vector2u explosionSize = explosionTexture.getSize();
+
+   sf::Sprite explosionSprite[12] = {
+      sf::Sprite( explosionTexture, sf::IntRect(0 * 96,0,96,96) ),
+      sf::Sprite( explosionTexture, sf::IntRect(1 * 96,0,96,96) ),
+      sf::Sprite( explosionTexture, sf::IntRect(2 * 96,0,96,96) ),
+      sf::Sprite( explosionTexture, sf::IntRect(3 * 96,0,96,96) ),
+      sf::Sprite( explosionTexture, sf::IntRect(4 * 96,0,96,96) ),
+      sf::Sprite( explosionTexture, sf::IntRect(5 * 96,0,96,96) ),
+      sf::Sprite( explosionTexture, sf::IntRect(6 * 96,0,96,96) ),
+      sf::Sprite( explosionTexture, sf::IntRect(7 * 96,0,96,96) ),
+      sf::Sprite( explosionTexture, sf::IntRect(8 * 96,0,96,96) ),
+      sf::Sprite( explosionTexture, sf::IntRect(9 * 96,0,96,96) ),
+      sf::Sprite( explosionTexture, sf::IntRect(10 * 96,0,96,96) ),
+      sf::Sprite( explosionTexture, sf::IntRect(11 * 96,0,96,96) ),
+   };
+
+   explosionSprite[3].scale( (float) TILE_SIZE / (float) 96, (float)TILE_SIZE / 96 );
 
 
    sf::RenderWindow window(sf::VideoMode(BOARD_SIZE * (int)TILE_SIZE, BOARD_SIZE * (int)TILE_SIZE), "Atoms");
@@ -507,22 +533,8 @@ int main()
                window.draw( p4vthree );
                break;
             case Explosion:
-            {
-               sf::Text text;
-               text.setFont(font);
-               text.setString("*");
-               text.setCharacterSize(TILE_SIZE);
-
-               //center text
-               sf::FloatRect textRect = text.getLocalBounds();
-               text.setOrigin(textRect.left + textRect.width/2.0f,
-                              textRect.top  + textRect.height/2.0f);
-               text.setPosition((y+0.5)*TILE_SIZE, (x+0.5)*TILE_SIZE);
-
-               text.setColor(sf::Color::Yellow);
-               window.draw(text);
-               break;
-            }
+               explosionSprite[3].setPosition( y*TILE_SIZE, x*TILE_SIZE );
+               window.draw(explosionSprite[3]);
             }
          }
       }
