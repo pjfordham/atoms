@@ -169,6 +169,7 @@ draw_t Atoms::getContent(int i, int j) {
    } else {
       if ( map[i][j] == 0 ) return Wall;
       bool isVolatile = (world[i][j] == map[i][j]);
+      if ( world[i][j] > map[i][j] ) return Bang;
       switch( world[i][j] ) {
       case 0: return Empty;
       case 1:
@@ -272,7 +273,7 @@ class Explosion : public Animation {
 
 public:
 
-   Explosion( sf::Sprite _background) : Animation( 12,12 ), background( _background ) {
+   Explosion( sf::Sprite _background) : Animation( 48,12 ), background( _background ) {
       if (!explosionTexture.loadFromFile("explosion.png"))
       {
          std::cerr << "Texture error." << std::endl;
@@ -370,7 +371,7 @@ int main()
    while (window.isOpen()) {
       if ( !atoms.finished ) {
          sf::Time elapsed = clock.getElapsedTime();
-         if (elapsed.asSeconds() > 0.1f) {
+         if (elapsed.asSeconds() > 0.25f) {
             atoms.recalculateBoard();
             clock.restart();
          }
