@@ -204,7 +204,7 @@ class Element : public sf::Drawable, public sf::Transformable {
 class Number : public Element {
    sf::Font font;
    sf::Color color;
-   mutable sf::Sprite background;
+   sf::Sprite background;
    int number;
    public:
 
@@ -231,6 +231,22 @@ public:
       text.setColor( color );
 
       target.draw(text,states);
+   }
+
+};
+
+class SpriteElement : public Element {
+   sf::Sprite background;
+   public:
+
+public:
+   SpriteElement( sf::Sprite _background ) :
+      background( _background) {
+   }
+
+   virtual void draw( sf::RenderTarget &target, sf::RenderStates states ) const {
+      states.transform *= getTransform();
+      target.draw(background, states);
    }
 
 };
@@ -270,7 +286,7 @@ public:
 class VolatileNumber : public Animation {
    sf::Font font;
    sf::Color color;
-   mutable sf::Sprite background;
+   sf::Sprite background;
    int number;
    public:
 
@@ -305,8 +321,8 @@ class VolatileNumber : public Animation {
 
 class Explosion : public Animation {
    sf::Texture explosionTexture;
-   mutable sf::Sprite explosionSprite[12];
-   mutable sf::Sprite background;
+   sf::Sprite explosionSprite[12];
+   sf::Sprite background;
 
 public:
 
@@ -401,8 +417,12 @@ int main()
    Number p3three( font, sf::Color::Blue, 3, woodSprite);
    Number p4three( font, sf::Color::White, 3, woodSprite);
 
+   SpriteElement wall( stoneSprite );
+   SpriteElement empty( woodSprite );
    Explosion explosion( woodSprite );
 
+   drawables[ Wall ] = &wall;
+   drawables[ Empty ] = &empty;
    drawables[ Bang ] = &explosion;
    drawables[ P1_One ] = &p1one;
    drawables[ P2_One ] = &p2one;
@@ -471,28 +491,22 @@ int main()
       for( int x=0;x<BOARD_SIZE;x++ ){
          for ( int y = 0;y<BOARD_SIZE;y++) {
             switch (atoms.getContent(x, y)) {
-            case Wall:
-               stoneSprite.setPosition( y*TILE_SIZE, x*TILE_SIZE );
-               window.draw(stoneSprite);
-               break;
             case Edge:
+            {
+               sf::RectangleShape shape(sf::Vector2f(TILE_SIZE, TILE_SIZE));
+               shape.setPosition(y*TILE_SIZE, x*TILE_SIZE);
+               shape.setFillColor(sf::Color::Yellow);
+               window.draw(shape);
+               break;
+            }
             case Corner:
             {
                sf::RectangleShape shape(sf::Vector2f(TILE_SIZE, TILE_SIZE));
                shape.setPosition(y*TILE_SIZE, x*TILE_SIZE);
-               switch (atoms.getContent(x,y)) {
-               case Wall: shape.setFillColor(sf::Color::White); break;
-               case Edge: shape.setFillColor(sf::Color::Yellow); break;
-               case Corner: shape.setFillColor(sf::Color::Red); break;
-               default: break;
-               }
+               shape.setFillColor(sf::Color::Red); break;
                window.draw(shape);
                break;
             }
-            case Empty:
-               woodSprite.setPosition( y*TILE_SIZE, x*TILE_SIZE );
-               window.draw(woodSprite);
-               break;
             default:
                auto &cell = *drawables[ atoms.getContent(x, y) ];
                cell.setPosition( y*TILE_SIZE, x*TILE_SIZE );
