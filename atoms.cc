@@ -197,10 +197,78 @@ draw_t Atoms::getContent(int i, int j) {
    }
 }
 
+class Animation : public sf::Drawable {
+   sf::Clock masterClock;
+   int frameRate;
+   sf::Time startTime;
+   int frames;
+
+   int getCurrentFrame() const {
+      sf::Time deltaTime = masterClock.getElapsedTime() - startTime;
+      int millisPerFrame = 1000 / frameRate;
+      int animationLength = frames * millisPerFrame;
+      int offset = deltaTime.asMilliseconds() % animationLength;
+      int frame = offset / millisPerFrame;
+      return  frame % frames;
+   }
+
+public:
+   Animation( int _frameRate, int _frames ) :
+      frameRate( _frameRate ),
+      frames( _frames ) {
+      startTime = masterClock.getElapsedTime();
+
+   }
+
+   virtual void draw( sf::RenderTarget &target, sf::RenderStates states, int frame ) const = 0;
+
+   virtual void draw( sf::RenderTarget &target, sf::RenderStates states ) const {
+      draw( target, states, getCurrentFrame() );
+   }
+
+};
+
+class VolatileNumber : public Animation {
+   sf::Font font;
+   sf::Color color;
+   int number;
+   int x;
+   int y;
+   public:
+   void setPosition(int _y, int _x) {
+      x = _x;
+      y = _y;
+   }
+
+   VolatileNumber( sf::Font _font, sf::Color _color, int _number ) :
+      Animation( 50, 50 ), font( _font ), color( _color), number( _number ), y(0), x(0) {
+   }
+
+   virtual void draw( sf::RenderTarget &target, sf::RenderStates states, int frame ) const {
+      sf::RectangleShape shape(sf::Vector2f(TILE_SIZE, TILE_SIZE));
+      shape.setPosition(y,x);
+      shape.setFillColor( sf::Color( frame*4, frame*4, 0 ) );
+      target.draw(shape);
+
+      sf::Text text;
+      text.setFont(font);
+      text.setString(std::to_string( number ));
+      text.setCharacterSize(TILE_SIZE);
+
+      // center text
+      sf::FloatRect textRect = text.getLocalBounds();
+      text.setOrigin(textRect.left + textRect.width/2.0f,
+                     textRect.top  + textRect.height/2.0f);
+      text.setPosition(y+(0.5*TILE_SIZE), x+(0.5*TILE_SIZE));
+
+      text.setColor(color);
+      target.draw(text);
+   }
+};
+
 int main()
 {
-
-   Atoms gol;
+   Atoms atoms;
 
    sf::Font font;
    if (!font.loadFromFile("Instruction.ttf") ) {
@@ -212,12 +280,25 @@ int main()
 
    sf::Clock clock;
 
+   VolatileNumber p1vone( font, sf::Color::Red, 1);
+   VolatileNumber p2vone( font, sf::Color::Green, 1);
+   VolatileNumber p3vone( font, sf::Color::Blue, 1);
+   VolatileNumber p4vone( font, sf::Color::White, 1);
+   VolatileNumber p1vtwo( font, sf::Color::Red, 2);
+   VolatileNumber p2vtwo( font, sf::Color::Green, 2);
+   VolatileNumber p3vtwo( font, sf::Color::Blue, 2);
+   VolatileNumber p4vtwo( font, sf::Color::White, 2);
+   VolatileNumber p1vthree( font, sf::Color::Red, 3);
+   VolatileNumber p2vthree( font, sf::Color::Green, 3);
+   VolatileNumber p3vthree( font, sf::Color::Blue, 3);
+   VolatileNumber p4vthree( font, sf::Color::White, 3);
+
    bool running = false;
    while (window.isOpen()) {
-      if ( !gol.finished ) {
+      if ( !atoms.finished ) {
          sf::Time elapsed = clock.getElapsedTime();
          if (elapsed.asSeconds() > 0.05f) {
-            gol.recalculateBoard();
+            atoms.recalculateBoard();
             clock.restart();
          }
       }
@@ -229,39 +310,38 @@ int main()
               event.key.code == sf::Keyboard::Escape) ) {
             window.close();
          }
-         if ( gol.finished ) {
+         if ( atoms.finished ) {
             if (event.type == sf::Event::MouseButtonPressed) {
                if (event.mouseButton.button == sf::Mouse::Left) {
-                  gol.click( ((int)event.mouseButton.x / (int)TILE_SIZE ),
+                  atoms.click( ((int)event.mouseButton.x / (int)TILE_SIZE ),
                              ((int)event.mouseButton.y / (int)TILE_SIZE ) );
                }
             }
             else if (event.type == sf::Event::KeyPressed) {
                if (event.key.code == sf::Keyboard::C){
-                  gol.clear();
+                  atoms.clear();
                }
                if (event.key.code == sf::Keyboard::Space){
-                  if (!gol.editing) {
-                     gol.clear();
+                  if (!atoms.editing) {
+                     atoms.clear();
                   }
-                  gol.editing = !gol.editing;
+                  atoms.editing = !atoms.editing;
                }
             }
          }
       }
-      // Clear window to Blue to do blue border.
       window.clear( sf::Color::Black );
 
       for( int x=0;x<BOARD_SIZE;x++ ){
          for ( int y = 0;y<BOARD_SIZE;y++) {
-            switch (gol.getContent(x, y)) {
+            switch (atoms.getContent(x, y)) {
             case Wall:
             case Edge:
             case Corner:
             {
                sf::RectangleShape shape(sf::Vector2f(TILE_SIZE, TILE_SIZE));
                shape.setPosition(y*TILE_SIZE, x*TILE_SIZE);
-               switch (gol.getContent(x,y)) {
+               switch (atoms.getContent(x,y)) {
                case Wall: shape.setFillColor(sf::Color::White); break;
                case Edge: shape.setFillColor(sf::Color::Yellow); break;
                case Corner: shape.setFillColor(sf::Color::Red); break;
@@ -287,7 +367,7 @@ int main()
                text.setOrigin(textRect.left + textRect.width/2.0f,
                               textRect.top  + textRect.height/2.0f);
                text.setPosition((y+0.5)*TILE_SIZE, (x+0.5)*TILE_SIZE);
-               switch(gol.getContent(x, y)) {
+               switch(atoms.getContent(x, y)) {
                case P1_One: text.setColor(sf::Color::Red); break;
                case P2_One: text.setColor(sf::Color::Green); break;
                case P3_One: text.setColor(sf::Color::Blue); break;
@@ -311,7 +391,7 @@ int main()
                text.setOrigin(textRect.left + textRect.width/2.0f,
                               textRect.top  + textRect.height/2.0f);
                text.setPosition((y+0.5)*TILE_SIZE, (x+0.5)*TILE_SIZE);
-               switch(gol.getContent(x, y)) {
+               switch(atoms.getContent(x, y)) {
                case P1_Two: text.setColor(sf::Color::Red); break;
                case P2_Two: text.setColor(sf::Color::Green); break;
                case P3_Two: text.setColor(sf::Color::Blue); break;
@@ -335,7 +415,7 @@ int main()
                text.setOrigin(textRect.left + textRect.width/2.0f,
                               textRect.top  + textRect.height/2.0f);
                text.setPosition((y+0.5)*TILE_SIZE, (x+0.5)*TILE_SIZE);
-               switch(gol.getContent(x, y)) {
+               switch(atoms.getContent(x, y)) {
                case P1_Three: text.setColor(sf::Color::Red); break;
                case P2_Three: text.setColor(sf::Color::Green); break;
                case P3_Three: text.setColor(sf::Color::Blue); break;
@@ -345,93 +425,53 @@ int main()
                break;
             }
             case P1_V_One:
+               p1vone.setPosition( y*TILE_SIZE, x*TILE_SIZE );
+               window.draw( p1vone );
+               break;
             case P2_V_One:
+               p2vone.setPosition( y*TILE_SIZE, x*TILE_SIZE );
+               window.draw( p2vone );
+               break;
             case P3_V_One:
+               p3vone.setPosition( y*TILE_SIZE, x*TILE_SIZE );
+               window.draw( p3vone );
+               break;
             case P4_V_One:
-            {
-               sf::RectangleShape shape(sf::Vector2f(TILE_SIZE, TILE_SIZE));
-               shape.setPosition(y*TILE_SIZE, x*TILE_SIZE);
-               shape.setFillColor(sf::Color::Yellow);
-               window.draw(shape);
-
-               sf::Text text;
-               text.setFont(font);
-               text.setString("1");
-               text.setCharacterSize(TILE_SIZE);
-
-               //center text
-               sf::FloatRect textRect = text.getLocalBounds();
-               text.setOrigin(textRect.left + textRect.width/2.0f,
-                              textRect.top  + textRect.height/2.0f);
-               text.setPosition((y+0.5)*TILE_SIZE, (x+0.5)*TILE_SIZE);
-
-               switch(gol.getContent(x, y)) {
-               case P1_V_One: text.setColor(sf::Color::Red); break;
-               case P2_V_One: text.setColor(sf::Color::Green); break;
-               case P3_V_One: text.setColor(sf::Color::Blue); break;
-               default:     text.setColor(sf::Color::White); break;
-               }
-               window.draw(text);
+               p4vone.setPosition( y*TILE_SIZE, x*TILE_SIZE );
+               window.draw( p4vone );
                break;
-            }
             case P1_V_Two:
+               p1vtwo.setPosition( y*TILE_SIZE, x*TILE_SIZE );
+               window.draw( p1vtwo );
+               break;
             case P2_V_Two:
+               p2vtwo.setPosition( y*TILE_SIZE, x*TILE_SIZE );
+               window.draw( p2vtwo );
+               break;
             case P3_V_Two:
+               p3vtwo.setPosition( y*TILE_SIZE, x*TILE_SIZE );
+               window.draw( p3vtwo );
+               break;
             case P4_V_Two:
-            {
-               sf::RectangleShape shape(sf::Vector2f(TILE_SIZE, TILE_SIZE));
-               shape.setPosition(y*TILE_SIZE, x*TILE_SIZE);
-               shape.setFillColor(sf::Color::Yellow);
-               window.draw(shape);
-
-               sf::Text text;
-               text.setFont(font);
-               text.setString("2");
-               text.setCharacterSize(TILE_SIZE);
-
-               //center text
-               sf::FloatRect textRect = text.getLocalBounds();
-               text.setOrigin(textRect.left + textRect.width/2.0f,
-                              textRect.top  + textRect.height/2.0f);
-               text.setPosition((y+0.5)*TILE_SIZE, (x+0.5)*TILE_SIZE);
-               switch(gol.getContent(x, y)) {
-               case P1_V_Two: text.setColor(sf::Color::Red); break;
-               case P2_V_Two: text.setColor(sf::Color::Green); break;
-               case P3_V_Two: text.setColor(sf::Color::Blue); break;
-               default:     text.setColor(sf::Color::White); break;
-               }
-               window.draw(text);
+               p4vtwo.setPosition( y*TILE_SIZE, x*TILE_SIZE );
+               window.draw( p4vtwo );
                break;
-            }
             case P1_V_Three:
-            case P2_V_Three:
-            case P3_V_Three:
-            case P4_V_Three:
-            {
-               sf::RectangleShape shape(sf::Vector2f(TILE_SIZE, TILE_SIZE));
-               shape.setPosition(y*TILE_SIZE, x*TILE_SIZE);
-               shape.setFillColor(sf::Color::Yellow);
-               window.draw(shape);
-
-               sf::Text text;
-               text.setFont(font);
-               text.setString("3");
-               text.setCharacterSize(TILE_SIZE);
-
-               //center text
-               sf::FloatRect textRect = text.getLocalBounds();
-               text.setOrigin(textRect.left + textRect.width/2.0f,
-                              textRect.top  + textRect.height/2.0f);
-               text.setPosition((y+0.5)*TILE_SIZE, (x+0.5)*TILE_SIZE);
-               switch(gol.getContent(x, y)) {
-               case P1_V_Three: text.setColor(sf::Color::Red); break;
-               case P2_V_Three: text.setColor(sf::Color::Green); break;
-               case P3_V_Three: text.setColor(sf::Color::Blue); break;
-               default:     text.setColor(sf::Color::White); break;
-               }
-               window.draw(text);
+               p1vthree.setPosition( y*TILE_SIZE, x*TILE_SIZE );
+               window.draw( p1vthree );
                break;
-            }
+            case P2_V_Three:
+               p2vthree.setPosition( y*TILE_SIZE, x*TILE_SIZE );
+               window.draw( p2vthree );
+               break;
+            case P3_V_Three:
+               p3vthree.setPosition( y*TILE_SIZE, x*TILE_SIZE );
+               window.draw( p3vthree );
+               break;
+            case P4_V_Three:
+               p4vthree.setPosition( y*TILE_SIZE, x*TILE_SIZE );
+               window.draw( p4vthree );
+               break;
             case Explosion:
             {
                sf::Text text;
