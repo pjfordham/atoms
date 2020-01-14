@@ -211,6 +211,7 @@ draw_t Atoms::getContent(int i, int j) {
 
 class Element : public sf::Drawable, public sf::Transformable {
 public:
+   virtual void restart() {}
    virtual bool isAnimated() { return false; }
 };
 
@@ -269,7 +270,7 @@ class RectangleShapeElement : public Element {
 public:
    RectangleShapeElement( sf::Color _color ) : color( _color ) {
    }
-   
+
    virtual void draw( sf::RenderTarget &target, sf::RenderStates states ) const {
       states.transform *= getTransform();
       sf::RectangleShape shape(sf::Vector2f(TILE_SIZE, TILE_SIZE));
@@ -280,25 +281,28 @@ public:
 
 class Animation : public Element {
    sf::Clock masterClock;
-   int frameRate;
-   sf::Time startTime;
+   int millisPerFrame;
    int frames;
+   bool wrap;
 
    int getCurrentFrame() const {
-      sf::Time deltaTime = masterClock.getElapsedTime() - startTime;
-      int millisPerFrame = 1000 / frameRate;
-      int animationLength = frames * millisPerFrame;
-      int offset = deltaTime.asMilliseconds() % animationLength;
-      int frame = offset / millisPerFrame;
-      return  frame % frames;
+      int frame = masterClock.getElapsedTime().asMilliseconds() / millisPerFrame;
+      if ( wrap ) {
+         return frame % frames;
+      } else {
+         return std::min( frame, frames - 1 );
+      }
    }
 
 public:
-   Animation( int _frameRate, int _frames ) :
-      frameRate( _frameRate ),
-      frames( _frames ) {
-      startTime = masterClock.getElapsedTime();
+   Animation( int _frameRate, int _frames, bool _wrap = true ) :
+      millisPerFrame( 1000 / _frameRate ),
+      frames( _frames ),
+      wrap( _wrap ) {
+   }
 
+   void restart() {
+      masterClock.restart();
    }
 
    virtual bool isAnimated(){ return true; }
@@ -354,7 +358,7 @@ class Explosion : public Animation {
 
 public:
 
-   Explosion( sf::Sprite _background) : Animation( 48,12 ), background( _background ) {
+   Explosion( sf::Sprite _background) : Animation( 48,12, false ), background( _background ) {
       if (!explosionTexture.loadFromFile("explosion.png"))
       {
          std::cerr << "Texture error." << std::endl;
@@ -468,6 +472,7 @@ int main()
          if (elapsed.asSeconds() > 0.25f) {
             atoms.recalculateBoard();
             clock.restart();
+            drawables[ Bang ]->restart();
             changes = true;
          }
       }
@@ -484,6 +489,10 @@ int main()
                if (event.mouseButton.button == sf::Mouse::Left) {
                   atoms.click( ((int)event.mouseButton.x / (int)TILE_SIZE ),
                              ((int)event.mouseButton.y / (int)TILE_SIZE ) );
+                  // Reset clock to make sure we see full explosion animation before
+                  // calling recalculate
+                  clock.restart();
+                  drawables[ Bang ]->restart();
                   changes = true;
                }
             }
