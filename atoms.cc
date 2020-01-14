@@ -5,6 +5,7 @@
 #include <SFML/Graphics.hpp>
 #include <string>
 #include <map>
+#include <unistd.h>
 
 #include <iostream>
 
@@ -15,6 +16,8 @@ const float TILE_SIZE = 50.0f;
 #define WIDTH BOARD_SIZE
 
 enum draw_t {
+   Nothing = 0,
+
    // Map Elements
    Wall, Corner, Edge, Empty, Bang,
 
@@ -71,7 +74,7 @@ void Atoms::clear() {
             if ( i == 0 || j == 0 || i == HEIGHT -1 || j == WIDTH - 1) {
                map[i][j] = 0;
             } else {
-               map[i][j] = 1;
+               map[i][j] = 3;
             }
          }
       }
@@ -106,10 +109,14 @@ void Atoms::calculateMap() {
 
 void Atoms::recalculateBoard() {
    finished = true;
-   memcpy(otherWorld, world, sizeof( world ));
    for ( int i = 0; i < HEIGHT; i++ ) {
       for ( int j = 0; j < WIDTH; j++ ) {
-         if ( map[i][j] != Wall ) {
+         otherWorld[i][j] = world[i][j];
+      }
+   }
+   for ( int i = 0; i < HEIGHT; i++ ) {
+      for ( int j = 0; j < WIDTH; j++ ) {
+         if ( map[i][j] != 0 ) {
             if (otherWorld[i][j] > (int)map[i][j]) {
                world[i][j]-= ((int)map[i][j] + 1 );
                world[i-1][j]++;
@@ -135,7 +142,7 @@ void Atoms::recalculateBoard() {
       scores[3] = 0;
       for ( int i = 0; i < HEIGHT; i++ ) {
          for ( int j = 0; j < WIDTH; j++ ) {
-            if ( map[i][j] != Wall )
+            if ( map[i][j] != 0 )
                scores[player[i][j]] += world[i][j];
          }
       }
@@ -150,10 +157,10 @@ void Atoms::recalculateBoard() {
 void Atoms::click( int j, int i )
 {
    if (editing ) {
-      map[i][j] = (map[i][j] == Wall) ? Empty : Wall;
+      map[i][j] = (map[i][j] == 0) ? 3 : 0;
       calculateMap();
    } else {
-      if ( player[i][j] == currentPlayer || world[i][j] == 0 ) {
+      if ( map[i][j] != 0 && ( player[i][j] == currentPlayer || world[i][j] == 0 ) ) {
          world[i][j]++;
          player[i][j] = currentPlayer;
          finished = false;
@@ -199,9 +206,12 @@ draw_t Atoms::getContent(int i, int j) {
       default: return Bang;
       }
    }
+   exit(-1);
 }
 
 class Element : public sf::Drawable, public sf::Transformable {
+public:
+   virtual bool isAnimated() { return false; }
 };
 
 class Number : public Element {
@@ -290,6 +300,8 @@ public:
       startTime = masterClock.getElapsedTime();
 
    }
+
+   virtual bool isAnimated(){ return true; }
 
    virtual void draw( sf::RenderTarget &target, sf::RenderStates states, int frame ) const = 0;
 
@@ -400,8 +412,14 @@ int main()
    woodSprite.setTexture(woodTexture);
    woodSprite.scale( (float) TILE_SIZE / (float) woodSize.x, (float)TILE_SIZE / woodSize.y );
 
-   sf::RenderWindow window(sf::VideoMode(BOARD_SIZE * (int)TILE_SIZE, BOARD_SIZE * (int)TILE_SIZE), "Atoms");
+   sf::Color p1color = sf::Color::Red;
+   sf::Color p2color = sf::Color::Green;
+   sf::Color p3color = sf::Color::Blue;
+   sf::Color p4color = sf::Color::White;
 
+   sf::RenderWindow window(sf::VideoMode(BOARD_SIZE * (int)TILE_SIZE, BOARD_SIZE * (int)TILE_SIZE), "Atoms");
+   window.setFramerateLimit( 50 );
+   
    sf::Clock clock;
 
    std::array<std::shared_ptr<Element>,draw_t_size > drawables;
@@ -411,38 +429,47 @@ int main()
    drawables[ Wall ] =   std::shared_ptr<Element>( new SpriteElement( stoneSprite ));
    drawables[ Empty ] =  std::shared_ptr<Element>( new SpriteElement( woodSprite ));
    drawables[ Bang ] =   std::shared_ptr<Element>( new Explosion( woodSprite ));
-   drawables[ P1_One ] = std::shared_ptr<Element>( new Number( font, sf::Color::Red, 1, woodSprite));
-   drawables[ P2_One ] = std::shared_ptr<Element>( new Number( font, sf::Color::Green, 1, woodSprite));
-   drawables[ P3_One ] = std::shared_ptr<Element>( new Number( font, sf::Color::Blue, 1, woodSprite));
-   drawables[ P4_One ] = std::shared_ptr<Element>( new Number( font, sf::Color::White, 1, woodSprite));
-   drawables[ P1_Two ] = std::shared_ptr<Element>( new Number( font, sf::Color::Red, 2, woodSprite));
-   drawables[ P2_Two ] = std::shared_ptr<Element>( new Number( font, sf::Color::Green, 2, woodSprite));
-   drawables[ P3_Two ] = std::shared_ptr<Element>( new Number( font, sf::Color::Blue, 2, woodSprite));
-   drawables[ P4_Two ] = std::shared_ptr<Element>( new Number( font, sf::Color::White, 2, woodSprite));
-   drawables[ P1_Three ] = std::shared_ptr<Element>( new Number( font, sf::Color::Red, 3, woodSprite));
-   drawables[ P2_Three ] = std::shared_ptr<Element>( new Number( font, sf::Color::Green, 3, woodSprite));
-   drawables[ P3_Three ] = std::shared_ptr<Element>( new Number( font, sf::Color::Blue, 3, woodSprite));
-   drawables[ P4_Three ] = std::shared_ptr<Element>( new Number( font, sf::Color::White, 3, woodSprite));
-   drawables[ P1_V_One ] = std::shared_ptr<Element>( new VolatileNumber( font, sf::Color::Red, 1, woodSprite));
-   drawables[ P2_V_One ] = std::shared_ptr<Element>( new VolatileNumber( font, sf::Color::Green, 1, woodSprite));
-   drawables[ P3_V_One ] = std::shared_ptr<Element>( new VolatileNumber( font, sf::Color::Blue, 1, woodSprite));
-   drawables[ P4_V_One ] = std::shared_ptr<Element>( new VolatileNumber( font, sf::Color::White, 1, woodSprite));
-   drawables[ P1_V_Two ] = std::shared_ptr<Element>( new VolatileNumber( font, sf::Color::Red, 2, woodSprite));
-   drawables[ P2_V_Two ] = std::shared_ptr<Element>( new VolatileNumber( font, sf::Color::Green, 2, woodSprite));
-   drawables[ P3_V_Two ] = std::shared_ptr<Element>( new VolatileNumber( font, sf::Color::Blue, 2, woodSprite));
-   drawables[ P4_V_Two ] = std::shared_ptr<Element>( new VolatileNumber( font, sf::Color::White, 2, woodSprite));
-   drawables[ P1_V_Three ] = std::shared_ptr<Element>( new VolatileNumber( font, sf::Color::Red, 3, woodSprite));
-   drawables[ P2_V_Three ] = std::shared_ptr<Element>( new VolatileNumber( font, sf::Color::Green, 3, woodSprite));
-   drawables[ P3_V_Three ] = std::shared_ptr<Element>( new VolatileNumber( font, sf::Color::Blue, 3, woodSprite));
-   drawables[ P4_V_Three ] = std::shared_ptr<Element>( new VolatileNumber( font, sf::Color::White, 3, woodSprite));
+   drawables[ P1_One ] = std::shared_ptr<Element>( new Number( font, p1color, 1, woodSprite) );
+   drawables[ P2_One ] = std::shared_ptr<Element>( new Number( font, p2color, 1, woodSprite) );
+   drawables[ P3_One ] = std::shared_ptr<Element>( new Number( font, p3color, 1, woodSprite) );
+   drawables[ P4_One ] = std::shared_ptr<Element>( new Number( font, p4color, 1, woodSprite) );
+   drawables[ P1_Two ] = std::shared_ptr<Element>( new Number( font, p1color, 2, woodSprite) );
+   drawables[ P2_Two ] = std::shared_ptr<Element>( new Number( font, p2color, 2, woodSprite) );
+   drawables[ P3_Two ] = std::shared_ptr<Element>( new Number( font, p3color, 2, woodSprite) );
+   drawables[ P4_Two ] = std::shared_ptr<Element>( new Number( font, p4color, 2, woodSprite) );
+   drawables[ P1_Three ] = std::shared_ptr<Element>( new Number( font, p1color, 3, woodSprite) );
+   drawables[ P2_Three ] = std::shared_ptr<Element>( new Number( font, p2color, 3, woodSprite) );
+   drawables[ P3_Three ] = std::shared_ptr<Element>( new Number( font, p3color, 3, woodSprite) );
+   drawables[ P4_Three ] = std::shared_ptr<Element>( new Number( font, p4color, 3, woodSprite) );
+   drawables[ P1_V_One ] = std::shared_ptr<Element>( new VolatileNumber( font, p1color, 1, woodSprite) );
+   drawables[ P2_V_One ] = std::shared_ptr<Element>( new VolatileNumber( font, p2color, 1, woodSprite) );
+   drawables[ P3_V_One ] = std::shared_ptr<Element>( new VolatileNumber( font, p3color, 1, woodSprite) );
+   drawables[ P4_V_One ] = std::shared_ptr<Element>( new VolatileNumber( font, p4color, 1, woodSprite) );
+   drawables[ P1_V_Two ] = std::shared_ptr<Element>( new VolatileNumber( font, p1color, 2, woodSprite) );
+   drawables[ P2_V_Two ] = std::shared_ptr<Element>( new VolatileNumber( font, p2color, 2, woodSprite) );
+   drawables[ P3_V_Two ] = std::shared_ptr<Element>( new VolatileNumber( font, p3color, 2, woodSprite) );
+   drawables[ P4_V_Two ] = std::shared_ptr<Element>( new VolatileNumber( font, p4color, 2, woodSprite) );
+   drawables[ P1_V_Three ] = std::shared_ptr<Element>( new VolatileNumber( font, p1color, 3, woodSprite) );
+   drawables[ P2_V_Three ] = std::shared_ptr<Element>( new VolatileNumber( font, p2color, 3, woodSprite) );
+   drawables[ P3_V_Three ] = std::shared_ptr<Element>( new VolatileNumber( font, p3color, 3, woodSprite) );
+   drawables[ P4_V_Three ] = std::shared_ptr<Element>( new VolatileNumber( font, p4color, 3, woodSprite) );
+
+   draw_t screen[BOARD_SIZE][BOARD_SIZE];
+   for( int x=0;x<BOARD_SIZE;x++ ){
+      for ( int y = 0;y<BOARD_SIZE;y++) {
+         screen[x][y] = Nothing;
+      }
+   }
 
    bool running = false;
    while (window.isOpen()) {
+      bool changes = false;
       if ( !atoms.finished ) {
          sf::Time elapsed = clock.getElapsedTime();
          if (elapsed.asSeconds() > 0.25f) {
             atoms.recalculateBoard();
             clock.restart();
+            changes = true;
          }
       }
 
@@ -458,31 +485,65 @@ int main()
                if (event.mouseButton.button == sf::Mouse::Left) {
                   atoms.click( ((int)event.mouseButton.x / (int)TILE_SIZE ),
                              ((int)event.mouseButton.y / (int)TILE_SIZE ) );
+                  changes = true;
                }
             }
             else if (event.type == sf::Event::KeyPressed) {
                if (event.key.code == sf::Keyboard::C){
                   atoms.clear();
+                  changes = true;
                }
                if (event.key.code == sf::Keyboard::Space){
                   if (!atoms.editing) {
                      atoms.clear();
                   }
                   atoms.editing = !atoms.editing;
+                  changes = true;
                }
             }
          }
       }
-      window.clear( sf::Color::Black );
 
-      for( int x=0;x<BOARD_SIZE;x++ ){
-         for ( int y = 0;y<BOARD_SIZE;y++) {
-            auto &cell = *drawables[ atoms.getContent(x, y) ];
-            cell.setPosition( y*TILE_SIZE, x*TILE_SIZE );
-            window.draw( cell );
+      bool nothing = true;
+      if ( !changes ) {
+         for( int x=0;x<BOARD_SIZE;x++ ){
+            for ( int y = 0;y<BOARD_SIZE;y++) {
+               if (screen[x][y] == Nothing ) {
+                  draw_t content = atoms.getContent( x, y );
+                  auto &cell = *drawables[ content ];
+                  cell.setPosition( y*TILE_SIZE, x*TILE_SIZE );
+                  window.draw( cell );
+                  nothing = false;
+                  if ( cell.isAnimated() ) {
+                     screen[x][y] = Nothing;
+                  } else {
+                     screen[x][y] = content;
+                  }
+               }
+            }
+         }
+      } else {
+         for( int x=0;x<BOARD_SIZE;x++ ){
+            for ( int y = 0;y<BOARD_SIZE;y++) {
+               draw_t content = atoms.getContent( x, y );
+               if ( screen[x][y] != content ) {
+                  auto &cell = *drawables[ content ];
+                  cell.setPosition( y*TILE_SIZE, x*TILE_SIZE );
+                  window.draw( cell );
+                  nothing = false;
+                  if ( cell.isAnimated() ) {
+                     screen[x][y] = Nothing;
+                  } else {
+                     screen[x][y] = content;
+                  }
+               }
+            }
          }
       }
-      window.display();
+      if ( !nothing )
+         window.display();
+      else
+         usleep(1000);
    }
 
    return 0;
