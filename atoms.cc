@@ -339,10 +339,9 @@ class VolatileNumber : public Animation {
 
       if ( frame >= 25 )
          frame = 50 - frame;
-      auto brightness = sf::Color(9 * frame, 9* frame, 9 * frame );
-      auto dimness = sf::Color(9 * (25 - frame), 9* (25-frame), 9 * (25-frame) );
+      auto dimness = sf::Color(255,255,255, frame*9 );
 
-      text.setColor( sf::Color::Yellow * brightness + color * dimness );
+      text.setColor( color * dimness );
 
       target.draw(text,states);
    }
@@ -415,11 +414,11 @@ int main()
    sf::Color p1color = sf::Color::Red;
    sf::Color p2color = sf::Color::Green;
    sf::Color p3color = sf::Color::Blue;
-   sf::Color p4color = sf::Color::White;
+   sf::Color p4color = sf::Color::Yellow;
 
    sf::RenderWindow window(sf::VideoMode(BOARD_SIZE * (int)TILE_SIZE, BOARD_SIZE * (int)TILE_SIZE), "Atoms");
    window.setFramerateLimit( 50 );
-   
+
    sf::Clock clock;
 
    std::array<std::shared_ptr<Element>,draw_t_size > drawables;
