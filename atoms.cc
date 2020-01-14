@@ -108,7 +108,7 @@ void Atoms::click( int j, int i )
    }
 }
 
-draw_t Atoms::getContent(int i, int j) {
+Atoms::draw_t Atoms::getContent(int i, int j) {
    if (editing) {
       switch( map[i][j] ) {
       case 0: return Wall;

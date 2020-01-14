@@ -7,6 +7,8 @@
 
 #include "atoms.hh"
 
+const float TILE_SIZE = 50.0f;
+
 class Element : public sf::Drawable, public sf::Transformable {
 public:
    virtual void restart() {}
@@ -223,42 +225,42 @@ int main()
 
    sf::Clock clock;
 
-   std::array<std::shared_ptr<Element>,draw_t_size > drawables;
+   std::array<std::shared_ptr<Element>,Atoms::draw_t_size > drawables;
 
-   drawables[ Corner ] = std::shared_ptr<Element>( new RectangleShapeElement( sf::Color::Red ));
-   drawables[ Edge ] =   std::shared_ptr<Element>( new RectangleShapeElement( sf::Color::Yellow ));
-   drawables[ Wall ] =   std::shared_ptr<Element>( new SpriteElement( stoneSprite ));
-   drawables[ Empty ] =  std::shared_ptr<Element>( new SpriteElement( woodSprite ));
-   drawables[ Bang ] =   std::shared_ptr<Element>( new Explosion( woodSprite ));
-   drawables[ P1_One ] = std::shared_ptr<Element>( new Number( font, p1color, 1, woodSprite) );
-   drawables[ P2_One ] = std::shared_ptr<Element>( new Number( font, p2color, 1, woodSprite) );
-   drawables[ P3_One ] = std::shared_ptr<Element>( new Number( font, p3color, 1, woodSprite) );
-   drawables[ P4_One ] = std::shared_ptr<Element>( new Number( font, p4color, 1, woodSprite) );
-   drawables[ P1_Two ] = std::shared_ptr<Element>( new Number( font, p1color, 2, woodSprite) );
-   drawables[ P2_Two ] = std::shared_ptr<Element>( new Number( font, p2color, 2, woodSprite) );
-   drawables[ P3_Two ] = std::shared_ptr<Element>( new Number( font, p3color, 2, woodSprite) );
-   drawables[ P4_Two ] = std::shared_ptr<Element>( new Number( font, p4color, 2, woodSprite) );
-   drawables[ P1_Three ] = std::shared_ptr<Element>( new Number( font, p1color, 3, woodSprite) );
-   drawables[ P2_Three ] = std::shared_ptr<Element>( new Number( font, p2color, 3, woodSprite) );
-   drawables[ P3_Three ] = std::shared_ptr<Element>( new Number( font, p3color, 3, woodSprite) );
-   drawables[ P4_Three ] = std::shared_ptr<Element>( new Number( font, p4color, 3, woodSprite) );
-   drawables[ P1_V_One ] = std::shared_ptr<Element>( new VolatileNumber( font, p1color, 1, woodSprite) );
-   drawables[ P2_V_One ] = std::shared_ptr<Element>( new VolatileNumber( font, p2color, 1, woodSprite) );
-   drawables[ P3_V_One ] = std::shared_ptr<Element>( new VolatileNumber( font, p3color, 1, woodSprite) );
-   drawables[ P4_V_One ] = std::shared_ptr<Element>( new VolatileNumber( font, p4color, 1, woodSprite) );
-   drawables[ P1_V_Two ] = std::shared_ptr<Element>( new VolatileNumber( font, p1color, 2, woodSprite) );
-   drawables[ P2_V_Two ] = std::shared_ptr<Element>( new VolatileNumber( font, p2color, 2, woodSprite) );
-   drawables[ P3_V_Two ] = std::shared_ptr<Element>( new VolatileNumber( font, p3color, 2, woodSprite) );
-   drawables[ P4_V_Two ] = std::shared_ptr<Element>( new VolatileNumber( font, p4color, 2, woodSprite) );
-   drawables[ P1_V_Three ] = std::shared_ptr<Element>( new VolatileNumber( font, p1color, 3, woodSprite) );
-   drawables[ P2_V_Three ] = std::shared_ptr<Element>( new VolatileNumber( font, p2color, 3, woodSprite) );
-   drawables[ P3_V_Three ] = std::shared_ptr<Element>( new VolatileNumber( font, p3color, 3, woodSprite) );
-   drawables[ P4_V_Three ] = std::shared_ptr<Element>( new VolatileNumber( font, p4color, 3, woodSprite) );
+   drawables[ Atoms::Corner ] = std::shared_ptr<Element>( new RectangleShapeElement( sf::Color::Red ));
+   drawables[ Atoms::Edge ] =   std::shared_ptr<Element>( new RectangleShapeElement( sf::Color::Yellow ));
+   drawables[ Atoms::Wall ] =   std::shared_ptr<Element>( new SpriteElement( stoneSprite ));
+   drawables[ Atoms::Empty ] =  std::shared_ptr<Element>( new SpriteElement( woodSprite ));
+   drawables[ Atoms::Bang ] =   std::shared_ptr<Element>( new Explosion( woodSprite ));
+   drawables[ Atoms::P1_One ] = std::shared_ptr<Element>( new Number( font, p1color, 1, woodSprite) );
+   drawables[ Atoms::P2_One ] = std::shared_ptr<Element>( new Number( font, p2color, 1, woodSprite) );
+   drawables[ Atoms::P3_One ] = std::shared_ptr<Element>( new Number( font, p3color, 1, woodSprite) );
+   drawables[ Atoms::P4_One ] = std::shared_ptr<Element>( new Number( font, p4color, 1, woodSprite) );
+   drawables[ Atoms::P1_Two ] = std::shared_ptr<Element>( new Number( font, p1color, 2, woodSprite) );
+   drawables[ Atoms::P2_Two ] = std::shared_ptr<Element>( new Number( font, p2color, 2, woodSprite) );
+   drawables[ Atoms::P3_Two ] = std::shared_ptr<Element>( new Number( font, p3color, 2, woodSprite) );
+   drawables[ Atoms::P4_Two ] = std::shared_ptr<Element>( new Number( font, p4color, 2, woodSprite) );
+   drawables[ Atoms::P1_Three ] = std::shared_ptr<Element>( new Number( font, p1color, 3, woodSprite) );
+   drawables[ Atoms::P2_Three ] = std::shared_ptr<Element>( new Number( font, p2color, 3, woodSprite) );
+   drawables[ Atoms::P3_Three ] = std::shared_ptr<Element>( new Number( font, p3color, 3, woodSprite) );
+   drawables[ Atoms::P4_Three ] = std::shared_ptr<Element>( new Number( font, p4color, 3, woodSprite) );
+   drawables[ Atoms::P1_V_One ] = std::shared_ptr<Element>( new VolatileNumber( font, p1color, 1, woodSprite) );
+   drawables[ Atoms::P2_V_One ] = std::shared_ptr<Element>( new VolatileNumber( font, p2color, 1, woodSprite) );
+   drawables[ Atoms::P3_V_One ] = std::shared_ptr<Element>( new VolatileNumber( font, p3color, 1, woodSprite) );
+   drawables[ Atoms::P4_V_One ] = std::shared_ptr<Element>( new VolatileNumber( font, p4color, 1, woodSprite) );
+   drawables[ Atoms::P1_V_Two ] = std::shared_ptr<Element>( new VolatileNumber( font, p1color, 2, woodSprite) );
+   drawables[ Atoms::P2_V_Two ] = std::shared_ptr<Element>( new VolatileNumber( font, p2color, 2, woodSprite) );
+   drawables[ Atoms::P3_V_Two ] = std::shared_ptr<Element>( new VolatileNumber( font, p3color, 2, woodSprite) );
+   drawables[ Atoms::P4_V_Two ] = std::shared_ptr<Element>( new VolatileNumber( font, p4color, 2, woodSprite) );
+   drawables[ Atoms::P1_V_Three ] = std::shared_ptr<Element>( new VolatileNumber( font, p1color, 3, woodSprite) );
+   drawables[ Atoms::P2_V_Three ] = std::shared_ptr<Element>( new VolatileNumber( font, p2color, 3, woodSprite) );
+   drawables[ Atoms::P3_V_Three ] = std::shared_ptr<Element>( new VolatileNumber( font, p3color, 3, woodSprite) );
+   drawables[ Atoms::P4_V_Three ] = std::shared_ptr<Element>( new VolatileNumber( font, p4color, 3, woodSprite) );
 
-   draw_t screen[BOARD_SIZE][BOARD_SIZE];
+   Atoms::draw_t screen[BOARD_SIZE][BOARD_SIZE];
    for( int x=0;x<BOARD_SIZE;x++ ){
       for ( int y = 0;y<BOARD_SIZE;y++) {
-         screen[x][y] = Nothing;
+         screen[x][y] = Atoms::Nothing;
       }
    }
 
@@ -270,7 +272,7 @@ int main()
          if (elapsed.asSeconds() > 0.25f) {
             atoms.recalculateBoard();
             clock.restart();
-            drawables[ Bang ]->restart();
+            drawables[ Atoms::Bang ]->restart();
             changes = true;
          }
       }
@@ -290,7 +292,7 @@ int main()
                   // Reset clock to make sure we see full explosion animation before
                   // calling recalculate
                   clock.restart();
-                  drawables[ Bang ]->restart();
+                  drawables[ Atoms::Bang ]->restart();
                   changes = true;
                }
             }
@@ -314,14 +316,14 @@ int main()
       if ( !changes ) {
          for( int x=0;x<BOARD_SIZE;x++ ){
             for ( int y = 0;y<BOARD_SIZE;y++) {
-               if (screen[x][y] == Nothing ) {
-                  draw_t content = atoms.getContent( x, y );
+               if (screen[x][y] == Atoms::Nothing ) {
+                  Atoms::draw_t content = atoms.getContent( x, y );
                   auto &cell = *drawables[ content ];
                   cell.setPosition( y*TILE_SIZE, x*TILE_SIZE );
                   window.draw( cell );
                   nothing = false;
                   if ( cell.isAnimated() ) {
-                     screen[x][y] = Nothing;
+                     screen[x][y] = Atoms::Nothing;
                   } else {
                      screen[x][y] = content;
                   }
@@ -331,14 +333,14 @@ int main()
       } else {
          for( int x=0;x<BOARD_SIZE;x++ ){
             for ( int y = 0;y<BOARD_SIZE;y++) {
-               draw_t content = atoms.getContent( x, y );
+               Atoms::draw_t content = atoms.getContent( x, y );
                if ( screen[x][y] != content ) {
                   auto &cell = *drawables[ content ];
                   cell.setPosition( y*TILE_SIZE, x*TILE_SIZE );
                   window.draw( cell );
                   nothing = false;
                   if ( cell.isAnimated() ) {
-                     screen[x][y] = Nothing;
+                     screen[x][y] = Atoms::Nothing;
                   } else {
                      screen[x][y] = content;
                   }
