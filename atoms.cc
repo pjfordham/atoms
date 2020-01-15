@@ -3,10 +3,10 @@
 Atoms::Atoms(int _width, int _height ) :
    width(_width),
    height(_height),
-   player( *new Array2D<int>(width,height) ),
-   map( *new Array2D<int>(width,height) ),
-   world( *new Array2D<int>(width,height) ),
-   otherWorld( *new Array2D<int>(width,height) )
+   player(width,height),
+   map(width,height),
+   world(width,height),
+   otherWorld(width,height)
 {
    clear();
    editing = false;
@@ -14,10 +14,6 @@ Atoms::Atoms(int _width, int _height ) :
 }
 
 Atoms::~Atoms() {
-   delete &player;
-   delete &map;
-   delete &world;
-   delete &otherWorld;
 }
 
 void Atoms::clear() {

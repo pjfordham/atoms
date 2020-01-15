@@ -46,7 +46,7 @@ private:
    int currentPlayer;
    bool firstGo[4];
    int scores[4];
-   Array2D<int> &player, &map, &world, &otherWorld;
+   Array2D<int> player, map, world, otherWorld;
 };
 
 #endif // ATOMS_FILE_H
