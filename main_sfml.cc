@@ -178,10 +178,11 @@ public:
 
 };
 
+const int BOARD_SIZE = 20;
 
 int main()
 {
-   Atoms atoms;
+   Atoms atoms(BOARD_SIZE, BOARD_SIZE);
 
    sf::Font font;
    if (!font.loadFromFile("Instruction.ttf") ) {

@@ -1,10 +1,7 @@
 #ifndef ATOMS_FILE_H
 #define ATOMS_FILE_H
 
-const int BOARD_SIZE = 20;
-
-#define HEIGHT BOARD_SIZE
-#define WIDTH BOARD_SIZE
+#include "support.hh"
 
 class Atoms {
 public:
@@ -34,7 +31,8 @@ public:
       draw_t_size
    };
 
-   Atoms();
+   Atoms(int _width, int _height);
+   ~Atoms();
    void click( int i, int j );
    void clear();
    void calculateMap();
@@ -43,13 +41,12 @@ public:
    bool editing = true;
    bool finished = true;
 private:
+   int width;
+   int height;
    int currentPlayer;
    bool firstGo[4];
    int scores[4];
-   int player[HEIGHT][WIDTH];
-   int map[HEIGHT][WIDTH];
-   int world[HEIGHT][WIDTH];
-   int otherWorld[HEIGHT][WIDTH];
+   Array2D<int> &player, &map, &world, &otherWorld;
 };
 
 #endif // ATOMS_FILE_H

@@ -1,17 +1,30 @@
 #include "atoms.hh"
 
-Atoms::Atoms()
+Atoms::Atoms(int _width, int _height ) :
+   width(_width),
+   height(_height),
+   player( *new Array2D<int>(width,height) ),
+   map( *new Array2D<int>(width,height) ),
+   world( *new Array2D<int>(width,height) ),
+   otherWorld( *new Array2D<int>(width,height) )
 {
    clear();
    editing = false;
    clear();
 }
 
+Atoms::~Atoms() {
+   delete &player;
+   delete &map;
+   delete &world;
+   delete &otherWorld;
+}
+
 void Atoms::clear() {
    if (editing) {
-      for ( int i = 0; i < HEIGHT; i++ ) {
-         for ( int j = 0; j < WIDTH; j++ ) {
-            if ( i == 0 || j == 0 || i == HEIGHT -1 || j == WIDTH - 1) {
+      for ( int i = 0; i < height; i++ ) {
+         for ( int j = 0; j < width; j++ ) {
+            if ( i == 0 || j == 0 || i == height - 1 || j == width - 1) {
                map[i][j] = 0;
             } else {
                map[i][j] = 3;
@@ -23,8 +36,8 @@ void Atoms::clear() {
       currentPlayer = 0;
       scores[0] = scores[1] = scores[2] = scores[3] = 0;
       firstGo[0] = firstGo[1] = firstGo[2] = firstGo[3] = true;
-      for ( int i = 0; i < HEIGHT; i++ ) {
-         for ( int j = 0; j < WIDTH; j++ ) {
+      for ( int i = 0; i < height; i++ ) {
+         for ( int j = 0; j < width; j++ ) {
             world[i][j] = 0;
             otherWorld[i][j] = 0;
             player[i][j] = 0;
@@ -34,8 +47,8 @@ void Atoms::clear() {
 }
 
 void Atoms::calculateMap() {
-   for ( int i = 0; i < HEIGHT; i++ ) {
-      for ( int j = 0; j < WIDTH; j++ ) {
+   for ( int i = 0; i < height; i++ ) {
+      for ( int j = 0; j < width; j++ ) {
          if ( map[i][j] != 0 ) {
             map[i][j] =  3 -
                ((map[i-1][j] == 0) ? 1 : 0) -
@@ -49,13 +62,13 @@ void Atoms::calculateMap() {
 
 void Atoms::recalculateBoard() {
    finished = true;
-   for ( int i = 0; i < HEIGHT; i++ ) {
-      for ( int j = 0; j < WIDTH; j++ ) {
+   for ( int i = 0; i < height; i++ ) {
+      for ( int j = 0; j < width; j++ ) {
          otherWorld[i][j] = world[i][j];
       }
    }
-   for ( int i = 0; i < HEIGHT; i++ ) {
-      for ( int j = 0; j < WIDTH; j++ ) {
+   for ( int i = 0; i < height; i++ ) {
+      for ( int j = 0; j < width; j++ ) {
          if ( map[i][j] != 0 ) {
             if (otherWorld[i][j] > (int)map[i][j]) {
                world[i][j]-= ((int)map[i][j] + 1 );
@@ -80,8 +93,8 @@ void Atoms::recalculateBoard() {
       scores[1] = 0;
       scores[2] = 0;
       scores[3] = 0;
-      for ( int i = 0; i < HEIGHT; i++ ) {
-         for ( int j = 0; j < WIDTH; j++ ) {
+      for ( int i = 0; i < height; i++ ) {
+         for ( int j = 0; j < width; j++ ) {
             if ( map[i][j] != 0 )
                scores[player[i][j]] += world[i][j];
          }
