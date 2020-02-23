@@ -261,14 +261,12 @@ int main()
    window.setFramerateLimit(60);
    bool running = false;
    while (window.isOpen()) {
-      bool changes = false;
       if ( !atoms.finished ) {
          sf::Time elapsed = clock.getElapsedTime();
          if (elapsed.asSeconds() > 0.25f) {
             atoms.recalculateBoard();
             clock.restart();
             drawables[ Atoms::Bang ]->restart();
-            changes = true;
          }
       }
 
@@ -288,20 +286,17 @@ int main()
                   // calling recalculate
                   clock.restart();
                   drawables[ Atoms::Bang ]->restart();
-                  changes = true;
                }
             }
             else if (event.type == sf::Event::KeyPressed) {
                if (event.key.code == sf::Keyboard::C){
                   atoms.clear();
-                  changes = true;
                }
                if (event.key.code == sf::Keyboard::Space){
                   if (!atoms.editing) {
                      atoms.clear();
                   }
                   atoms.editing = !atoms.editing;
-                  changes = true;
                }
             }
          }
