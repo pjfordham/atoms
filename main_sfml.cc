@@ -42,7 +42,7 @@ public:
                      textRect.top  + textRect.height/2.0f);
       text.move((0.5*TILE_SIZE), (0.5*TILE_SIZE));
 
-      text.setColor( color );
+      text.setFillColor( color );
 
       target.draw(text,states);
    }
@@ -145,7 +145,7 @@ class VolatileNumber : public Animation {
          frame = 50 - frame;
       auto dimness = sf::Color(255,255,255, frame*9 );
 
-      text.setColor( color * dimness );
+      text.setFillColor( color * dimness );
 
       target.draw(text,states);
    }
@@ -258,13 +258,7 @@ int main()
    drawables[ Atoms::P3_V_Three ] = std::shared_ptr<Element>( new VolatileNumber( font, p3color, 3, woodSprite) );
    drawables[ Atoms::P4_V_Three ] = std::shared_ptr<Element>( new VolatileNumber( font, p4color, 3, woodSprite) );
 
-   Atoms::draw_t screen[BOARD_SIZE][BOARD_SIZE];
-   for( int x=0;x<BOARD_SIZE;x++ ){
-      for ( int y = 0;y<BOARD_SIZE;y++) {
-         screen[x][y] = Atoms::Nothing;
-      }
-   }
-
+   window.setFramerateLimit(60);
    bool running = false;
    while (window.isOpen()) {
       bool changes = false;
@@ -313,46 +307,15 @@ int main()
          }
       }
 
-      bool nothing = true;
-      if ( !changes ) {
-         for( int x=0;x<BOARD_SIZE;x++ ){
-            for ( int y = 0;y<BOARD_SIZE;y++) {
-               if (screen[x][y] == Atoms::Nothing ) {
-                  Atoms::draw_t content = atoms.getContent( x, y );
-                  auto &cell = *drawables[ content ];
-                  cell.setPosition( y*TILE_SIZE, x*TILE_SIZE );
-                  window.draw( cell );
-                  nothing = false;
-                  if ( cell.isAnimated() ) {
-                     screen[x][y] = Atoms::Nothing;
-                  } else {
-                     screen[x][y] = content;
-                  }
-               }
-            }
-         }
-      } else {
-         for( int x=0;x<BOARD_SIZE;x++ ){
-            for ( int y = 0;y<BOARD_SIZE;y++) {
-               Atoms::draw_t content = atoms.getContent( x, y );
-               if ( screen[x][y] != content ) {
-                  auto &cell = *drawables[ content ];
-                  cell.setPosition( y*TILE_SIZE, x*TILE_SIZE );
-                  window.draw( cell );
-                  nothing = false;
-                  if ( cell.isAnimated() ) {
-                     screen[x][y] = Atoms::Nothing;
-                  } else {
-                     screen[x][y] = content;
-                  }
-               }
-            }
+      for( int x=0;x<BOARD_SIZE;x++ ){
+         for ( int y = 0;y<BOARD_SIZE;y++) {
+            Atoms::draw_t content = atoms.getContent( x, y );
+            auto &cell = *drawables[ content ];
+            cell.setPosition( y*TILE_SIZE, x*TILE_SIZE );
+            window.draw( cell );
          }
       }
-      if ( !nothing )
-         window.display();
-      else
-         usleep(1000);
+      window.display();
    }
 
    return 0;
