@@ -219,10 +219,8 @@ int main()
    sf::Color pcolor[4] = { sf::Color::Red, sf::Color::Green, sf::Color::Blue, sf::Color::Yellow };
    sf::Color scolor = sf::Color::White;
 
-   sf::RenderWindow window(sf::VideoMode(BOARD_SIZE * (int)TILE_SIZE, BOARD_SIZE * (int)TILE_SIZE), "Atoms");
+   sf::RenderWindow window(sf::VideoMode((10+BOARD_SIZE) * (int)TILE_SIZE, BOARD_SIZE * (int)TILE_SIZE), "Atoms");
    window.setFramerateLimit( 50 );
-
-   sf::RenderWindow window2(sf::VideoMode(9 * (int)TILE_SIZE, 4 * (int)TILE_SIZE), "Scoreboard");
 
    sf::Clock clock;
 
@@ -273,7 +271,7 @@ int main()
       }
 
       sf::Event event;
-      while (window.pollEvent(event) || window2.pollEvent(event)) {
+      while (window.pollEvent(event)) {
          if (event.type == sf::Event::Closed ||
              (event.type == sf::Event::KeyPressed &&
               event.key.code == sf::Keyboard::Escape) ) {
@@ -312,9 +310,24 @@ int main()
             window.draw( cell );
          }
       }
-      window.display();
 
-      window2.clear();
+      for( int x=0;x<BOARD_SIZE;x++ ){
+         for ( int y = BOARD_SIZE;y<BOARD_SIZE+10;y++) {
+            auto &cell = *drawables[ Atoms::Wall ];
+            cell.setPosition( y*TILE_SIZE, x*TILE_SIZE );
+            window.draw( cell );
+         }
+      }
+
+      const char *buf = "   Score  Board   ";
+      sf::Text text;
+      text.setFont(font);
+      text.setString(buf);
+      text.setCharacterSize(TILE_SIZE-5);
+      text.setPosition(BOARD_SIZE*TILE_SIZE+5, TILE_SIZE);
+      text.setFillColor(sf::Color::White);
+      window.draw(text);
+
       for( int i=0;i<4;++i ) {
          char buf[21];
          sf::Text text;
@@ -330,7 +343,7 @@ int main()
          }
          text.setString(buf);
          text.setCharacterSize(TILE_SIZE-5);
-         text.setPosition(5, TILE_SIZE*i-5);
+         text.setPosition(BOARD_SIZE*TILE_SIZE+5, TILE_SIZE*(i+3)-5);
          if (i == atoms.getCurrentPlayer() ) {
             text.setOutlineThickness(5);
             text.setFillColor(pcolor[i]);
@@ -338,9 +351,9 @@ int main()
          } else {
             text.setFillColor(pcolor[i]);
          }
-         window2.draw(text);
+         window.draw(text);
       }
-      window2.display();
+      window.display();
    }
 
    return 0;
