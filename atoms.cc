@@ -14,6 +14,18 @@ Atoms::Atoms(int _width, int _height ) :
    clear();
 }
 
+bool Atoms::gameOver() {
+   int max_score = 0;
+   int total_atoms = 0;
+   if (firstGo[0] || firstGo[1] || firstGo[2] || firstGo[3])
+      return false;
+   for( int i=0;i<4;++i) {
+      max_score = std::max( max_score, scores[i] );
+      total_atoms += scores[i];
+   }
+   return (max_score == total_atoms);
+}
+
 int Atoms::getCurrentPlayer() {
    return currentPlayer;
 }

@@ -319,10 +319,14 @@ int main()
          char buf[21];
          sf::Text text;
          text.setFont(font);
-         if (atoms.isPlayerDead( i )) {
+         if(atoms.isPlayerDead( i )) {
             snprintf( buf, 21, "Player %d:    DEAD", i);
          } else {
-            snprintf( buf, 21, "Player %d:     %3d", i, atoms.getPlayerScore(i));
+            if (atoms.gameOver()) {
+               snprintf( buf, 21, "Player %d: WINNER!", i);
+            } else {
+               snprintf( buf, 21, "Player %d:     %3d", i, atoms.getPlayerScore(i));
+            }
          }
          text.setString(buf);
          text.setCharacterSize(TILE_SIZE-5);

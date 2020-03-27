@@ -44,6 +44,7 @@ public:
    int getCurrentPlayer();
    bool isPlayerDead( int i );
    int getPlayerScore( int i );
+   bool gameOver();
    bool editing = true;
    bool finished = true;
 private:
