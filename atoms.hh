@@ -43,12 +43,12 @@ public:
    draw_t getContent( int i, int j);
    bool editing = true;
    bool finished = true;
+   int scores[4];
 private:
    int width;
    int height;
    int currentPlayer;
    bool firstGo[4];
-   int scores[4];
    Array2D<int> player, map, world, otherWorld;
 };
 

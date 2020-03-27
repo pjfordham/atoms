@@ -225,6 +225,8 @@ int main()
    sf::RenderWindow window(sf::VideoMode(BOARD_SIZE * (int)TILE_SIZE, BOARD_SIZE * (int)TILE_SIZE), "Atoms");
    window.setFramerateLimit( 50 );
 
+   sf::RenderWindow window2(sf::VideoMode(10 * (int)TILE_SIZE, 4 * (int)TILE_SIZE), "Scoreboard");
+
    sf::Clock clock;
 
    std::array<std::shared_ptr<Element>,Atoms::draw_t_size > drawables;
@@ -274,7 +276,7 @@ int main()
       }
 
       sf::Event event;
-      while (window.pollEvent(event)) {
+      while (window.pollEvent(event) || window2.pollEvent(event)) {
          if (event.type == sf::Event::Closed ||
              (event.type == sf::Event::KeyPressed &&
               event.key.code == sf::Keyboard::Escape) ) {
@@ -314,6 +316,37 @@ int main()
          }
       }
       window.display();
+      window2.clear();
+      sf::Text text;
+      text.setFont(font);
+      char buf[21];
+
+      snprintf( buf, 21, "Player 1:\t %3d", atoms.scores[0]);
+      text.setString(buf);
+      text.setCharacterSize(TILE_SIZE-5);
+      text.setPosition(5, 0);
+      text.setFillColor(p1color);
+      window2.draw(text);
+
+      snprintf( buf, 21, "Player 2:\t %3d", atoms.scores[1]);
+      text.setString(buf);
+      text.setPosition(5, TILE_SIZE*1-5);
+      text.setFillColor(p2color);
+      window2.draw(text);
+
+      snprintf( buf, 21, "Player 3:\t %3d", atoms.scores[2]);
+      text.setString(buf);
+      text.setPosition(5, TILE_SIZE*2-5);
+      text.setFillColor(p3color);
+      window2.draw(text);
+
+      snprintf( buf, 21, "Player 4:\t %3d", atoms.scores[3]);
+      text.setString(buf);
+      text.setPosition(5, TILE_SIZE*3-5);
+      text.setFillColor(p4color);
+      window2.draw(text);
+
+      window2.display();
    }
 
    return 0;
