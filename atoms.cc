@@ -14,6 +14,18 @@ Atoms::Atoms(int _width, int _height ) :
    clear();
 }
 
+int Atoms::getCurrentPlayer() {
+   return currentPlayer;
+}
+
+bool Atoms::isPlayerDead( int i ) {
+   return scores[ i ] == 0 && !firstGo[ i ];
+}
+
+int Atoms::getPlayerScore( int i ) {
+   return scores[i];
+}
+
 Atoms::~Atoms() {
 }
 

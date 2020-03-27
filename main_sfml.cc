@@ -216,16 +216,13 @@ int main()
    woodSprite.setTexture(woodTexture);
    woodSprite.scale( (float) TILE_SIZE / (float) woodSize.x, (float)TILE_SIZE / woodSize.y );
 
-   sf::Color p1color = sf::Color::Red;
-   sf::Color p2color = sf::Color::Green;
-   sf::Color p3color = sf::Color::Blue;
-   sf::Color p4color = sf::Color::Yellow;
+   sf::Color pcolor[4] = { sf::Color::Red, sf::Color::Green, sf::Color::Blue, sf::Color::Yellow };
    sf::Color scolor = sf::Color::White;
 
    sf::RenderWindow window(sf::VideoMode(BOARD_SIZE * (int)TILE_SIZE, BOARD_SIZE * (int)TILE_SIZE), "Atoms");
    window.setFramerateLimit( 50 );
 
-   sf::RenderWindow window2(sf::VideoMode(10 * (int)TILE_SIZE, 4 * (int)TILE_SIZE), "Scoreboard");
+   sf::RenderWindow window2(sf::VideoMode(9 * (int)TILE_SIZE, 4 * (int)TILE_SIZE), "Scoreboard");
 
    sf::Clock clock;
 
@@ -236,30 +233,30 @@ int main()
    drawables[ Atoms::Wall ] =   std::shared_ptr<Element>( new SpriteElement( stoneSprite ));
    drawables[ Atoms::Empty ] =  std::shared_ptr<Element>( new SpriteElement( woodSprite ));
    drawables[ Atoms::Bang ] =   std::shared_ptr<Element>( new Explosion( woodSprite ));
-   drawables[ Atoms::P1_One ] = std::shared_ptr<Element>( new Number( font, p1color, 1, woodSprite) );
-   drawables[ Atoms::P2_One ] = std::shared_ptr<Element>( new Number( font, p2color, 1, woodSprite) );
-   drawables[ Atoms::P3_One ] = std::shared_ptr<Element>( new Number( font, p3color, 1, woodSprite) );
-   drawables[ Atoms::P4_One ] = std::shared_ptr<Element>( new Number( font, p4color, 1, woodSprite) );
-   drawables[ Atoms::P1_Two ] = std::shared_ptr<Element>( new Number( font, p1color, 2, woodSprite) );
-   drawables[ Atoms::P2_Two ] = std::shared_ptr<Element>( new Number( font, p2color, 2, woodSprite) );
-   drawables[ Atoms::P3_Two ] = std::shared_ptr<Element>( new Number( font, p3color, 2, woodSprite) );
-   drawables[ Atoms::P4_Two ] = std::shared_ptr<Element>( new Number( font, p4color, 2, woodSprite) );
-   drawables[ Atoms::P1_Three ] = std::shared_ptr<Element>( new Number( font, p1color, 3, woodSprite) );
-   drawables[ Atoms::P2_Three ] = std::shared_ptr<Element>( new Number( font, p2color, 3, woodSprite) );
-   drawables[ Atoms::P3_Three ] = std::shared_ptr<Element>( new Number( font, p3color, 3, woodSprite) );
-   drawables[ Atoms::P4_Three ] = std::shared_ptr<Element>( new Number( font, p4color, 3, woodSprite) );
-   drawables[ Atoms::P1_V_One ] = std::shared_ptr<Element>( new VolatileNumber( font, p1color, 1, woodSprite) );
-   drawables[ Atoms::P2_V_One ] = std::shared_ptr<Element>( new VolatileNumber( font, p2color, 1, woodSprite) );
-   drawables[ Atoms::P3_V_One ] = std::shared_ptr<Element>( new VolatileNumber( font, p3color, 1, woodSprite) );
-   drawables[ Atoms::P4_V_One ] = std::shared_ptr<Element>( new VolatileNumber( font, p4color, 1, woodSprite) );
-   drawables[ Atoms::P1_V_Two ] = std::shared_ptr<Element>( new VolatileNumber( font, p1color, 2, woodSprite) );
-   drawables[ Atoms::P2_V_Two ] = std::shared_ptr<Element>( new VolatileNumber( font, p2color, 2, woodSprite) );
-   drawables[ Atoms::P3_V_Two ] = std::shared_ptr<Element>( new VolatileNumber( font, p3color, 2, woodSprite) );
-   drawables[ Atoms::P4_V_Two ] = std::shared_ptr<Element>( new VolatileNumber( font, p4color, 2, woodSprite) );
-   drawables[ Atoms::P1_V_Three ] = std::shared_ptr<Element>( new VolatileNumber( font, p1color, 3, woodSprite) );
-   drawables[ Atoms::P2_V_Three ] = std::shared_ptr<Element>( new VolatileNumber( font, p2color, 3, woodSprite) );
-   drawables[ Atoms::P3_V_Three ] = std::shared_ptr<Element>( new VolatileNumber( font, p3color, 3, woodSprite) );
-   drawables[ Atoms::P4_V_Three ] = std::shared_ptr<Element>( new VolatileNumber( font, p4color, 3, woodSprite) );
+   drawables[ Atoms::P1_One ] = std::shared_ptr<Element>( new Number( font, pcolor[0], 1, woodSprite) );
+   drawables[ Atoms::P2_One ] = std::shared_ptr<Element>( new Number( font, pcolor[1], 1, woodSprite) );
+   drawables[ Atoms::P3_One ] = std::shared_ptr<Element>( new Number( font, pcolor[2], 1, woodSprite) );
+   drawables[ Atoms::P4_One ] = std::shared_ptr<Element>( new Number( font, pcolor[3], 1, woodSprite) );
+   drawables[ Atoms::P1_Two ] = std::shared_ptr<Element>( new Number( font, pcolor[0], 2, woodSprite) );
+   drawables[ Atoms::P2_Two ] = std::shared_ptr<Element>( new Number( font, pcolor[1], 2, woodSprite) );
+   drawables[ Atoms::P3_Two ] = std::shared_ptr<Element>( new Number( font, pcolor[2], 2, woodSprite) );
+   drawables[ Atoms::P4_Two ] = std::shared_ptr<Element>( new Number( font, pcolor[3], 2, woodSprite) );
+   drawables[ Atoms::P1_Three ] = std::shared_ptr<Element>( new Number( font, pcolor[0], 3, woodSprite) );
+   drawables[ Atoms::P2_Three ] = std::shared_ptr<Element>( new Number( font, pcolor[1], 3, woodSprite) );
+   drawables[ Atoms::P3_Three ] = std::shared_ptr<Element>( new Number( font, pcolor[2], 3, woodSprite) );
+   drawables[ Atoms::P4_Three ] = std::shared_ptr<Element>( new Number( font, pcolor[3], 3, woodSprite) );
+   drawables[ Atoms::P1_V_One ] = std::shared_ptr<Element>( new VolatileNumber( font, pcolor[0], 1, woodSprite) );
+   drawables[ Atoms::P2_V_One ] = std::shared_ptr<Element>( new VolatileNumber( font, pcolor[1], 1, woodSprite) );
+   drawables[ Atoms::P3_V_One ] = std::shared_ptr<Element>( new VolatileNumber( font, pcolor[2], 1, woodSprite) );
+   drawables[ Atoms::P4_V_One ] = std::shared_ptr<Element>( new VolatileNumber( font, pcolor[3], 1, woodSprite) );
+   drawables[ Atoms::P1_V_Two ] = std::shared_ptr<Element>( new VolatileNumber( font, pcolor[0], 2, woodSprite) );
+   drawables[ Atoms::P2_V_Two ] = std::shared_ptr<Element>( new VolatileNumber( font, pcolor[1], 2, woodSprite) );
+   drawables[ Atoms::P3_V_Two ] = std::shared_ptr<Element>( new VolatileNumber( font, pcolor[2], 2, woodSprite) );
+   drawables[ Atoms::P4_V_Two ] = std::shared_ptr<Element>( new VolatileNumber( font, pcolor[3], 2, woodSprite) );
+   drawables[ Atoms::P1_V_Three ] = std::shared_ptr<Element>( new VolatileNumber( font, pcolor[0], 3, woodSprite) );
+   drawables[ Atoms::P2_V_Three ] = std::shared_ptr<Element>( new VolatileNumber( font, pcolor[1], 3, woodSprite) );
+   drawables[ Atoms::P3_V_Three ] = std::shared_ptr<Element>( new VolatileNumber( font, pcolor[2], 3, woodSprite) );
+   drawables[ Atoms::P4_V_Three ] = std::shared_ptr<Element>( new VolatileNumber( font, pcolor[3], 3, woodSprite) );
    drawables[ Atoms::S_One ] = std::shared_ptr<Element>( new Number( font, scolor, 1, woodSprite) );
    drawables[ Atoms::S_Two ] = std::shared_ptr<Element>( new Number( font, scolor, 2, woodSprite) );
 
@@ -316,36 +313,29 @@ int main()
          }
       }
       window.display();
+
       window2.clear();
-      sf::Text text;
-      text.setFont(font);
-      char buf[21];
-
-      snprintf( buf, 21, "Player 1:\t %3d", atoms.scores[0]);
-      text.setString(buf);
-      text.setCharacterSize(TILE_SIZE-5);
-      text.setPosition(5, 0);
-      text.setFillColor(p1color);
-      window2.draw(text);
-
-      snprintf( buf, 21, "Player 2:\t %3d", atoms.scores[1]);
-      text.setString(buf);
-      text.setPosition(5, TILE_SIZE*1-5);
-      text.setFillColor(p2color);
-      window2.draw(text);
-
-      snprintf( buf, 21, "Player 3:\t %3d", atoms.scores[2]);
-      text.setString(buf);
-      text.setPosition(5, TILE_SIZE*2-5);
-      text.setFillColor(p3color);
-      window2.draw(text);
-
-      snprintf( buf, 21, "Player 4:\t %3d", atoms.scores[3]);
-      text.setString(buf);
-      text.setPosition(5, TILE_SIZE*3-5);
-      text.setFillColor(p4color);
-      window2.draw(text);
-
+      for( int i=0;i<4;++i ) {
+         char buf[21];
+         sf::Text text;
+         text.setFont(font);
+         if (atoms.isPlayerDead( i )) {
+            snprintf( buf, 21, "Player %d:    DEAD", i);
+         } else {
+            snprintf( buf, 21, "Player %d:     %3d", i, atoms.getPlayerScore(i));
+         }
+         text.setString(buf);
+         text.setCharacterSize(TILE_SIZE-5);
+         text.setPosition(5, TILE_SIZE*i-5);
+         if (i == atoms.getCurrentPlayer() ) {
+            text.setOutlineThickness(5);
+            text.setFillColor(pcolor[i]);
+            text.setOutlineColor(sf::Color::White);
+         } else {
+            text.setFillColor(pcolor[i]);
+         }
+         window2.draw(text);
+      }
       window2.display();
    }
 
