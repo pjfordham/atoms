@@ -333,12 +333,12 @@ int main()
          sf::Text text;
          text.setFont(font);
          if(atoms.isPlayerDead( i )) {
-            snprintf( buf, 21, "Player %d:    DEAD", i);
+            snprintf( buf, 21, "Player %d:    DEAD", i+1);
          } else {
             if (atoms.gameOver()) {
-               snprintf( buf, 21, "Player %d: WINNER!", i);
+               snprintf( buf, 21, "Player %d: WINNER!", i+1);
             } else {
-               snprintf( buf, 21, "Player %d:     %3d", i, atoms.getPlayerScore(i));
+               snprintf( buf, 21, "Player %d:     %3d", i+1, atoms.getPlayerScore(i));
             }
          }
          text.setString(buf);
