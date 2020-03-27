@@ -28,6 +28,9 @@ public:
       P4_One, P4_Two, P4_Three,
       P4_V_One, P4_V_Two, P4_V_Three,
 
+      // Starting atoms
+      S_One, S_Two,
+
       draw_t_size
    };
 

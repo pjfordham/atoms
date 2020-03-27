@@ -220,6 +220,7 @@ int main()
    sf::Color p2color = sf::Color::Green;
    sf::Color p3color = sf::Color::Blue;
    sf::Color p4color = sf::Color::Yellow;
+   sf::Color scolor = sf::Color::White;
 
    sf::RenderWindow window(sf::VideoMode(BOARD_SIZE * (int)TILE_SIZE, BOARD_SIZE * (int)TILE_SIZE), "Atoms");
    window.setFramerateLimit( 50 );
@@ -257,6 +258,8 @@ int main()
    drawables[ Atoms::P2_V_Three ] = std::shared_ptr<Element>( new VolatileNumber( font, p2color, 3, woodSprite) );
    drawables[ Atoms::P3_V_Three ] = std::shared_ptr<Element>( new VolatileNumber( font, p3color, 3, woodSprite) );
    drawables[ Atoms::P4_V_Three ] = std::shared_ptr<Element>( new VolatileNumber( font, p4color, 3, woodSprite) );
+   drawables[ Atoms::S_One ] = std::shared_ptr<Element>( new Number( font, scolor, 1, woodSprite) );
+   drawables[ Atoms::S_Two ] = std::shared_ptr<Element>( new Number( font, scolor, 2, woodSprite) );
 
    window.setFramerateLimit(60);
    bool running = false;
