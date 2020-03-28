@@ -61,7 +61,7 @@ void Atoms::clear() {
       firstGo[0] = firstGo[1] = firstGo[2] = firstGo[3] = true;
       for ( int i = 0; i < height; i++ ) {
          for ( int j = 0; j < width; j++ ) {
-            if ( i == 0 || j == 0 || i == height - 1 || j == width - 1) {
+            if ( map[i][j] < 2 ) {
                world[i][j] = 0;
             } else {
                world[i][j] = std::uniform_int_distribution<int>(0,map[i][j]-1)(randomNumbers);
