@@ -3,7 +3,7 @@ CXX=g++
 RM=rm -f
 CPPFLAGS=-O2 -std=c++11 -g
 LDFLAGS=
-LDLIBS=-lsfml-graphics -lsfml-window -lsfml-system
+LDLIBS=-lsfml-graphics -lsfml-window -lsfml-system -lsfml-network
 
 SRCS=atoms.cc support.cc main_sfml.cc
 OBJS=$(subst .cc,.o,$(SRCS))

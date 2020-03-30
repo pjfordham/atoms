@@ -4,6 +4,7 @@
 
 #include <unistd.h>
 #include <SFML/Graphics.hpp>
+#include <SFML/Network.hpp>
 
 #include "atoms.hh"
 
@@ -260,6 +261,27 @@ int main()
 
    window.setFramerateLimit(60);
    bool running = false;
+
+   bool client = false;
+   sf::TcpSocket socket;
+   sf::Socket::Status status = socket.connect("127.0.0.1", 53000);
+   if (status == sf::Socket::Done) {
+      socket.setBlocking(false);
+      client = true;
+   }
+
+   bool listening = true;
+   sf::TcpListener listener;
+   if (client ||  listener.listen(53000) != sf::Socket::Done) {
+      std::cerr << "Uable to open listening socket, network play disabled." << std::endl;
+      listening = false;
+   } else {
+      listener.setBlocking(false);
+   }
+   
+   int client_count = 0;
+   sf::TcpSocket clients[4];
+
    while (window.isOpen()) {
       if ( !atoms.finished ) {
          sf::Time elapsed = clock.getElapsedTime();
@@ -268,6 +290,12 @@ int main()
             clock.restart();
             drawables[ Atoms::Bang ]->restart();
          }
+      }
+
+      if (listening && client_count < 4 && listener.accept(clients[client_count]) == sf::Socket::Done ) {
+         clients[client_count].setBlocking( false );
+         client_count++;
+         std::cout << "Player " << client_count << " connected." << std::endl;
       }
 
       sf::Event event;
@@ -280,12 +308,29 @@ int main()
          if ( atoms.finished ) {
             if (event.type == sf::Event::MouseButtonPressed) {
                if (event.mouseButton.button == sf::Mouse::Left) {
-                  atoms.click( ((int)event.mouseButton.x / (int)TILE_SIZE ),
-                             ((int)event.mouseButton.y / (int)TILE_SIZE ) );
+                  char buf[2] = { (char)((int)event.mouseButton.x / (int)TILE_SIZE ),
+                                  (char)((int)event.mouseButton.y / (int)TILE_SIZE ) };
+                  atoms.click( buf[0], buf[1] );
                   // Reset clock to make sure we see full explosion animation before
                   // calling recalculate
                   clock.restart();
                   drawables[ Atoms::Bang ]->restart();
+                  if ( client ) {
+                     // Send click to the server
+                     std::size_t sent;
+                     if (socket.send(&buf, 2, sent) != sf::Socket::Done) {
+                        // error...
+                     }
+                  }
+                  if (listening) {
+                     for (int i = 0 ; i< client_count; ++i ) {
+                        // Send click to the clients
+                        std::size_t sent;
+                        if (clients[i].send(&buf, 2, sent) != sf::Socket::Done) {
+                           // error...
+                        }
+                     }
+                  }
                }
             }
             else if (event.type == sf::Event::KeyPressed) {
@@ -301,7 +346,46 @@ int main()
             }
          }
       }
-
+      if (client) {
+         char buf[2];
+         std::size_t received;
+         if (socket.receive( buf, 2, received ) == sf::Socket::Done ) {
+            if (received == 1) {
+               socket.setBlocking( true );
+               socket.receive( buf+ 1, 1, received  );
+               socket.setBlocking( false );
+               atoms.click( buf[0], buf[1] );
+               // Reset clock to make sure we see full explosion animation before
+               // calling recalculate
+               clock.restart();
+               drawables[ Atoms::Bang ]->restart();
+            }
+            if (received == 2 ) {
+               atoms.click( buf[0], buf[1] );
+               // Reset clock to make sure we see full explosion animation before
+               // calling recalculate
+               clock.restart();
+               drawables[ Atoms::Bang ]->restart();
+            }
+         }
+      }
+      if (listening) {
+         for (int i = 0 ; i< client_count; ++i ) {
+            char buf[2];
+            std::size_t received;
+            if (clients[i].receive( buf, 2, received ) == sf::Socket::Done ) {
+               if (received == 1) {
+                  clients[i].setBlocking( true );
+                  clients[i].receive( buf+ 1, 1, received  );
+                  clients[i].setBlocking( false );
+                  atoms.click( buf[0], buf[1] );
+               }
+               if (received == 2 )
+                  atoms.click( buf[0], buf[1] );
+            }
+         }
+      }
+      
       for( int x=0;x<BOARD_SIZE;x++ ){
          for ( int y = 0;y<BOARD_SIZE;y++) {
             Atoms::draw_t content = atoms.getContent( x, y );
