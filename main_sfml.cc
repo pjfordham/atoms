@@ -311,25 +311,18 @@ int main()
          if ( atoms.finished ) {
             if (event.type == sf::Event::MouseButtonPressed) {
                if (event.mouseButton.button == sf::Mouse::Left) {
-                  int _x = (int)event.mouseButton.x / (int)TILE_SIZE;
-                  int _y = (int)event.mouseButton.y / (int)TILE_SIZE;
+                  x = (int)event.mouseButton.x / (int)TILE_SIZE;
+                  y = (int)event.mouseButton.y / (int)TILE_SIZE;
                   if ( client ) {
-                     // Send click to the server
-                     sf::Packet packet;
-                     packet << _x << _y;
-                     if (socket.send(packet) != sf::Socket::Done) {
+                     if (socket.send(sf::Packet() << x << y) != sf::Socket::Done) {
                         // error...
                      }
                   } else {
                      click = true;
-                     x = _x;
-                     y = _y;
                   }
                   if (listening) {
                      for (int i = 0 ; i< client_count; ++i ) {
-                        sf::Packet packet;
-                        packet << _x << _y;
-                        if (clients[i].send(packet) != sf::Socket::Done) {
+                        if (clients[i].send(sf::Packet() << x << y) != sf::Socket::Done) {
                            // error...
                         }
                      }
