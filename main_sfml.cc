@@ -311,24 +311,25 @@ int main()
          if ( atoms.finished ) {
             if (event.type == sf::Event::MouseButtonPressed) {
                if (event.mouseButton.button == sf::Mouse::Left) {
-                  char buf[2] = { (char)((int)event.mouseButton.x / (int)TILE_SIZE ),
-                                  (char)((int)event.mouseButton.y / (int)TILE_SIZE ) };
+                  int _x = (int)event.mouseButton.x / (int)TILE_SIZE;
+                  int _y = (int)event.mouseButton.y / (int)TILE_SIZE;
                   if ( client ) {
                      // Send click to the server
-                     std::size_t sent;
-                     if (socket.send(&buf, 2, sent) != sf::Socket::Done) {
+                     sf::Packet packet;
+                     packet << _x << _y;
+                     if (socket.send(packet) != sf::Socket::Done) {
                         // error...
                      }
                   } else {
                      click = true;
-                     x = buf[0];
-                     y = buf[1];
+                     x = _x;
+                     y = _y;
                   }
                   if (listening) {
                      for (int i = 0 ; i< client_count; ++i ) {
-                        // Send click to the clients
-                        std::size_t sent;
-                        if (clients[i].send(&buf, 2, sent) != sf::Socket::Done) {
+                        sf::Packet packet;
+                        packet << _x << _y;
+                        if (clients[i].send(packet) != sf::Socket::Done) {
                            // error...
                         }
                      }
@@ -349,46 +350,23 @@ int main()
          }
       }
       if (!click && client) {
-         char buf[2];
-         std::size_t received;
-         if (socket.receive( buf, 2, received ) == sf::Socket::Done ) {
-            if (received == 1) {
-               socket.setBlocking( true );
-               socket.receive( buf+ 1, 1, received  );
-               socket.setBlocking( false );
-               click = true;
-               x = buf[0];
-               y = buf[1];
-            }
-            if (received == 2 ) {
-               click = true;
-               x = buf[0];
-               y = buf[1];
-            }
+         sf::Packet packet;
+         if (socket.receive( packet ) == sf::Socket::Done ) {
+            packet >> x >> y;
+            click = true;
          }
       }
       if (!click && listening) {
          for (int i = 0 ; i< client_count; ++i ) {
-            char buf[2];
-            std::size_t received;
-            if (clients[i].receive( buf, 2, received ) == sf::Socket::Done ) {
-               if (received == 1) {
-                  clients[i].setBlocking( true );
-                  clients[i].receive( buf+ 1, 1, received  );
-                  clients[i].setBlocking( false );
-                  click = true;
-                  x = buf[0];
-                  y=buf[1];
-               }
-               if (received == 2 ) {
-                  click = true;
-                  x = buf[0];
-                  y = buf[1];
-               }
+            sf::Packet packet;
+            if (clients[i].receive( packet ) == sf::Socket::Done ) {
+               packet >> x >> y;
+               click = true;
                for (int j = 0 ; j< client_count; ++j ) {
                      // Send click to the server
-                     std::size_t sent;
-                     if (clients[j].send(&buf, 2, sent) != sf::Socket::Done) {
+                     sf::Packet newpacket;
+                     newpacket << x << y;
+                     if (clients[j].send(newpacket) != sf::Socket::Done) {
                         // error...
                      }
                }               // We need to send this click to the other clients as well.....
