@@ -278,7 +278,7 @@ int main()
    } else {
       listener.setBlocking(false);
    }
-   
+
    int client_count = 0;
    sf::TcpSocket clients[4];
 
@@ -298,8 +298,11 @@ int main()
          std::cout << "Player " << client_count << " connected." << std::endl;
       }
 
+      bool click = false;
+      int x = 0, y = 0;
+
       sf::Event event;
-      while (window.pollEvent(event)) {
+      if (window.pollEvent(event)) {
          if (event.type == sf::Event::Closed ||
              (event.type == sf::Event::KeyPressed &&
               event.key.code == sf::Keyboard::Escape) ) {
@@ -310,17 +313,16 @@ int main()
                if (event.mouseButton.button == sf::Mouse::Left) {
                   char buf[2] = { (char)((int)event.mouseButton.x / (int)TILE_SIZE ),
                                   (char)((int)event.mouseButton.y / (int)TILE_SIZE ) };
-                  atoms.click( buf[0], buf[1] );
-                  // Reset clock to make sure we see full explosion animation before
-                  // calling recalculate
-                  clock.restart();
-                  drawables[ Atoms::Bang ]->restart();
                   if ( client ) {
                      // Send click to the server
                      std::size_t sent;
                      if (socket.send(&buf, 2, sent) != sf::Socket::Done) {
                         // error...
                      }
+                  } else {
+                     click = true;
+                     x = buf[0];
+                     y = buf[1];
                   }
                   if (listening) {
                      for (int i = 0 ; i< client_count; ++i ) {
@@ -346,7 +348,7 @@ int main()
             }
          }
       }
-      if (client) {
+      if (!click && client) {
          char buf[2];
          std::size_t received;
          if (socket.receive( buf, 2, received ) == sf::Socket::Done ) {
@@ -354,22 +356,18 @@ int main()
                socket.setBlocking( true );
                socket.receive( buf+ 1, 1, received  );
                socket.setBlocking( false );
-               atoms.click( buf[0], buf[1] );
-               // Reset clock to make sure we see full explosion animation before
-               // calling recalculate
-               clock.restart();
-               drawables[ Atoms::Bang ]->restart();
+               click = true;
+               x = buf[0];
+               y = buf[1];
             }
             if (received == 2 ) {
-               atoms.click( buf[0], buf[1] );
-               // Reset clock to make sure we see full explosion animation before
-               // calling recalculate
-               clock.restart();
-               drawables[ Atoms::Bang ]->restart();
+               click = true;
+               x = buf[0];
+               y = buf[1];
             }
          }
       }
-      if (listening) {
+      if (!click && listening) {
          for (int i = 0 ; i< client_count; ++i ) {
             char buf[2];
             std::size_t received;
@@ -378,14 +376,34 @@ int main()
                   clients[i].setBlocking( true );
                   clients[i].receive( buf+ 1, 1, received  );
                   clients[i].setBlocking( false );
-                  atoms.click( buf[0], buf[1] );
+                  click = true;
+                  x = buf[0];
+                  y=buf[1];
                }
-               if (received == 2 )
-                  atoms.click( buf[0], buf[1] );
+               if (received == 2 ) {
+                  click = true;
+                  x = buf[0];
+                  y = buf[1];
+               }
+               for (int j = 0 ; j< client_count; ++j ) {
+                     // Send click to the server
+                     std::size_t sent;
+                     if (clients[j].send(&buf, 2, sent) != sf::Socket::Done) {
+                        // error...
+                     }
+               }               // We need to send this click to the other clients as well.....
             }
          }
       }
-      
+
+      if (click) {
+         atoms.click( x,y );
+         // Reset clock to make sure we see full explosion animation before
+         // calling recalculate
+         clock.restart();
+         drawables[ Atoms::Bang ]->restart();
+      }
+
       for( int x=0;x<BOARD_SIZE;x++ ){
          for ( int y = 0;y<BOARD_SIZE;y++) {
             Atoms::draw_t content = atoms.getContent( x, y );
