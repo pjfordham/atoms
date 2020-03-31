@@ -362,7 +362,7 @@ int main()
                      if (clients[j].send(newpacket) != sf::Socket::Done) {
                         // error...
                      }
-               }               // We need to send this click to the other clients as well.....
+               }
             }
          }
       }
