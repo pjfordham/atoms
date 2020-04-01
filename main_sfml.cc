@@ -262,7 +262,7 @@ int main()
    window.setFramerateLimit(60);
    bool running = false;
 
-   int player = 0;
+   int32_t player = 0;
    bool client = false;
    sf::TcpSocket socket;
    sf::Socket::Status status = socket.connect("127.0.0.1", 53000);
@@ -285,7 +285,7 @@ int main()
       listener.setBlocking(false);
    }
 
-   int client_count = 0;
+   int32_t client_count = 0;
    sf::TcpSocket clients[4];
 
    while (window.isOpen()) {
@@ -309,7 +309,7 @@ int main()
       }
 
       bool click = false;
-      int x = 0, y = 0;
+      int32_t x = 0, y = 0;
 
       sf::Event event;
       if (window.pollEvent(event)) {
