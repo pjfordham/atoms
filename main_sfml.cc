@@ -262,12 +262,18 @@ int main()
    window.setFramerateLimit(60);
    bool running = false;
 
+   int player = 0;
    bool client = false;
    sf::TcpSocket socket;
    sf::Socket::Status status = socket.connect("127.0.0.1", 53000);
    if (status == sf::Socket::Done) {
-      socket.setBlocking(false);
       client = true;
+      sf::Packet packet;
+      if (socket.receive( packet ) == sf::Socket::Done ) {
+         packet >> player;
+         std::cout << "Connectd to server as player " << player + 1 << std::endl;
+      }
+      socket.setBlocking(false);
    }
 
    bool listening = true;
@@ -292,10 +298,14 @@ int main()
          }
       }
 
-      if (listening && client_count < 4 && listener.accept(clients[client_count]) == sf::Socket::Done ) {
+      if (listening && client_count < 3 && listener.accept(clients[client_count]) == sf::Socket::Done ) {
          clients[client_count].setBlocking( false );
+         clients[client_count].send(sf::Packet() << client_count+1);
          client_count++;
-         std::cout << "Player " << client_count << " connected." << std::endl;
+         std::cerr << "Player " << client_count + 1 << " connected." << std::endl;
+      }
+      if (client_count == 3) {
+         listener.close();
       }
 
       bool click = false;
