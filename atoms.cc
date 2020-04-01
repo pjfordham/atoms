@@ -54,7 +54,8 @@ void Atoms::clear() {
       }
       calculateMap();
    } else {
-      std::random_device rd;
+      std::minstd_rand rd;
+      rd.seed(5);
       std::mt19937 randomNumbers(rd());
       currentPlayer = 0;
       scores[0] = scores[1] = scores[2] = scores[3] = 0;
