@@ -2,7 +2,6 @@
 #include <string>
 #include <iostream>
 
-#include <unistd.h>
 #include <SFML/Graphics.hpp>
 #include <SFML/Network.hpp>
 
@@ -28,7 +27,7 @@ public:
       font( _font ), color( _color), background( _background), number( _number ) {
    }
 
-   virtual void draw( sf::RenderTarget &target, sf::RenderStates states ) const {
+   void draw( sf::RenderTarget &target, sf::RenderStates states ) const override {
       states.transform *= getTransform();
       target.draw(background, states);
 
@@ -55,11 +54,11 @@ class SpriteElement : public Element {
    public:
 
 public:
-   SpriteElement( sf::Sprite _background ) :
+   explicit SpriteElement( sf::Sprite _background ) :
       background( _background) {
    }
 
-   virtual void draw( sf::RenderTarget &target, sf::RenderStates states ) const {
+   void draw( sf::RenderTarget &target, sf::RenderStates states ) const override {
       states.transform *= getTransform();
       target.draw(background, states);
    }
@@ -69,10 +68,10 @@ public:
 class RectangleShapeElement : public Element {
    sf::Color color;
 public:
-   RectangleShapeElement( sf::Color _color ) : color( _color ) {
+   explicit RectangleShapeElement( sf::Color _color ) : color( _color ) {
    }
 
-   virtual void draw( sf::RenderTarget &target, sf::RenderStates states ) const {
+   void draw( sf::RenderTarget &target, sf::RenderStates states ) const override {
       states.transform *= getTransform();
       sf::RectangleShape shape(sf::Vector2f(TILE_SIZE, TILE_SIZE));
       shape.setFillColor( color );
@@ -102,11 +101,11 @@ public:
       wrap( _wrap ) {
    }
 
-   void restart() {
+   void restart() override {
       masterClock.restart();
    }
 
-   virtual bool isAnimated(){ return true; }
+   bool isAnimated() override{ return true; }
 
    virtual void draw( sf::RenderTarget &target, sf::RenderStates states, int frame ) const = 0;
 
@@ -128,7 +127,7 @@ class VolatileNumber : public Animation {
       Animation( 50, 50 ), font( _font ), color( _color), background( _background), number( _number ) {
    }
 
-   virtual void draw( sf::RenderTarget &target, sf::RenderStates states, int frame ) const {
+   void draw( sf::RenderTarget &target, sf::RenderStates states, int frame ) const override {
       target.draw(background, states);
 
       sf::Text text;
@@ -159,7 +158,7 @@ class Explosion : public Animation {
 
 public:
 
-   Explosion( sf::Sprite _background) : Animation( 48,12, false ), background( _background ) {
+   explicit Explosion( sf::Sprite _background) : Animation( 48,12, false ), background( _background ) {
       if (!explosionTexture.loadFromFile("explosion.png"))
       {
          std::cerr << "Texture error." << std::endl;
@@ -172,7 +171,7 @@ public:
       }
    };
 
-   virtual void draw( sf::RenderTarget &target, sf::RenderStates states, int frame ) const {
+   void draw( sf::RenderTarget &target, sf::RenderStates states, int frame ) const override {
       target.draw(background, states);
       target.draw( explosionSprite[ frame], states );
    }
@@ -217,47 +216,47 @@ int main()
    woodSprite.setTexture(woodTexture);
    woodSprite.scale( (float) TILE_SIZE / (float) woodSize.x, (float)TILE_SIZE / woodSize.y );
 
-   sf::Color pcolor[4] = { sf::Color::Red, sf::Color::Green, sf::Color::Blue, sf::Color::Yellow };
-   sf::Color scolor = sf::Color::White;
+   sf::Color pColor[4] = {sf::Color::Red, sf::Color::Green, sf::Color::Blue, sf::Color::Yellow };
+   sf::Color sColor = sf::Color::White;
 
    sf::RenderWindow window(sf::VideoMode((10+BOARD_SIZE) * (int)TILE_SIZE, BOARD_SIZE * (int)TILE_SIZE), "Atoms");
    window.setFramerateLimit( 50 );
 
    sf::Clock clock;
 
-   std::array<std::shared_ptr<Element>,Atoms::draw_t_size > drawables;
+   std::array<std::unique_ptr<Element>,Atoms::draw_t_size > drawables;
 
-   drawables[ Atoms::Corner ] = std::shared_ptr<Element>( new RectangleShapeElement( sf::Color::Red ));
-   drawables[ Atoms::Edge ] =   std::shared_ptr<Element>( new RectangleShapeElement( sf::Color::Yellow ));
-   drawables[ Atoms::Wall ] =   std::shared_ptr<Element>( new SpriteElement( stoneSprite ));
-   drawables[ Atoms::Empty ] =  std::shared_ptr<Element>( new SpriteElement( woodSprite ));
-   drawables[ Atoms::Bang ] =   std::shared_ptr<Element>( new Explosion( woodSprite ));
-   drawables[ Atoms::P1_One ] = std::shared_ptr<Element>( new Number( font, pcolor[0], 1, woodSprite) );
-   drawables[ Atoms::P2_One ] = std::shared_ptr<Element>( new Number( font, pcolor[1], 1, woodSprite) );
-   drawables[ Atoms::P3_One ] = std::shared_ptr<Element>( new Number( font, pcolor[2], 1, woodSprite) );
-   drawables[ Atoms::P4_One ] = std::shared_ptr<Element>( new Number( font, pcolor[3], 1, woodSprite) );
-   drawables[ Atoms::P1_Two ] = std::shared_ptr<Element>( new Number( font, pcolor[0], 2, woodSprite) );
-   drawables[ Atoms::P2_Two ] = std::shared_ptr<Element>( new Number( font, pcolor[1], 2, woodSprite) );
-   drawables[ Atoms::P3_Two ] = std::shared_ptr<Element>( new Number( font, pcolor[2], 2, woodSprite) );
-   drawables[ Atoms::P4_Two ] = std::shared_ptr<Element>( new Number( font, pcolor[3], 2, woodSprite) );
-   drawables[ Atoms::P1_Three ] = std::shared_ptr<Element>( new Number( font, pcolor[0], 3, woodSprite) );
-   drawables[ Atoms::P2_Three ] = std::shared_ptr<Element>( new Number( font, pcolor[1], 3, woodSprite) );
-   drawables[ Atoms::P3_Three ] = std::shared_ptr<Element>( new Number( font, pcolor[2], 3, woodSprite) );
-   drawables[ Atoms::P4_Three ] = std::shared_ptr<Element>( new Number( font, pcolor[3], 3, woodSprite) );
-   drawables[ Atoms::P1_V_One ] = std::shared_ptr<Element>( new VolatileNumber( font, pcolor[0], 1, woodSprite) );
-   drawables[ Atoms::P2_V_One ] = std::shared_ptr<Element>( new VolatileNumber( font, pcolor[1], 1, woodSprite) );
-   drawables[ Atoms::P3_V_One ] = std::shared_ptr<Element>( new VolatileNumber( font, pcolor[2], 1, woodSprite) );
-   drawables[ Atoms::P4_V_One ] = std::shared_ptr<Element>( new VolatileNumber( font, pcolor[3], 1, woodSprite) );
-   drawables[ Atoms::P1_V_Two ] = std::shared_ptr<Element>( new VolatileNumber( font, pcolor[0], 2, woodSprite) );
-   drawables[ Atoms::P2_V_Two ] = std::shared_ptr<Element>( new VolatileNumber( font, pcolor[1], 2, woodSprite) );
-   drawables[ Atoms::P3_V_Two ] = std::shared_ptr<Element>( new VolatileNumber( font, pcolor[2], 2, woodSprite) );
-   drawables[ Atoms::P4_V_Two ] = std::shared_ptr<Element>( new VolatileNumber( font, pcolor[3], 2, woodSprite) );
-   drawables[ Atoms::P1_V_Three ] = std::shared_ptr<Element>( new VolatileNumber( font, pcolor[0], 3, woodSprite) );
-   drawables[ Atoms::P2_V_Three ] = std::shared_ptr<Element>( new VolatileNumber( font, pcolor[1], 3, woodSprite) );
-   drawables[ Atoms::P3_V_Three ] = std::shared_ptr<Element>( new VolatileNumber( font, pcolor[2], 3, woodSprite) );
-   drawables[ Atoms::P4_V_Three ] = std::shared_ptr<Element>( new VolatileNumber( font, pcolor[3], 3, woodSprite) );
-   drawables[ Atoms::S_One ] = std::shared_ptr<Element>( new Number( font, scolor, 1, woodSprite) );
-   drawables[ Atoms::S_Two ] = std::shared_ptr<Element>( new Number( font, scolor, 2, woodSprite) );
+   drawables[ Atoms::Corner ] = std::make_unique<RectangleShapeElement>( sf::Color::Red );
+   drawables[ Atoms::Edge ] =   std::make_unique<RectangleShapeElement>( sf::Color::Yellow );
+   drawables[ Atoms::Wall ] =   std::make_unique<SpriteElement>( stoneSprite );
+   drawables[ Atoms::Empty ] =  std::make_unique<SpriteElement>( woodSprite );
+   drawables[ Atoms::Bang ] =   std::make_unique<Explosion>( woodSprite );
+   drawables[ Atoms::P1_One ] = std::make_unique<Number>(font, pColor[0], 1, woodSprite);
+   drawables[ Atoms::P2_One ] = std::make_unique<Number>(font, pColor[1], 1, woodSprite);
+   drawables[ Atoms::P3_One ] = std::make_unique<Number>(font, pColor[2], 1, woodSprite);
+   drawables[ Atoms::P4_One ] = std::make_unique<Number>(font, pColor[3], 1, woodSprite);
+   drawables[ Atoms::P1_Two ] = std::make_unique<Number>(font, pColor[0], 2, woodSprite);
+   drawables[ Atoms::P2_Two ] = std::make_unique<Number>(font, pColor[1], 2, woodSprite);
+   drawables[ Atoms::P3_Two ] = std::make_unique<Number>(font, pColor[2], 2, woodSprite);
+   drawables[ Atoms::P4_Two ] = std::make_unique<Number>(font, pColor[3], 2, woodSprite);
+   drawables[ Atoms::P1_Three ] = std::make_unique<Number>(font, pColor[0], 3, woodSprite);
+   drawables[ Atoms::P2_Three ] = std::make_unique<Number>(font, pColor[1], 3, woodSprite);
+   drawables[ Atoms::P3_Three ] = std::make_unique<Number>(font, pColor[2], 3, woodSprite);
+   drawables[ Atoms::P4_Three ] = std::make_unique<Number>(font, pColor[3], 3, woodSprite);
+   drawables[ Atoms::P1_V_One ] = std::make_unique<VolatileNumber>(font, pColor[0], 1, woodSprite);
+   drawables[ Atoms::P2_V_One ] = std::make_unique<VolatileNumber>(font, pColor[1], 1, woodSprite);
+   drawables[ Atoms::P3_V_One ] = std::make_unique<VolatileNumber>(font, pColor[2], 1, woodSprite);
+   drawables[ Atoms::P4_V_One ] = std::make_unique<VolatileNumber>(font, pColor[3], 1, woodSprite);
+   drawables[ Atoms::P1_V_Two ] = std::make_unique<VolatileNumber>(font, pColor[0], 2, woodSprite);
+   drawables[ Atoms::P2_V_Two ] = std::make_unique<VolatileNumber>(font, pColor[1], 2, woodSprite);
+   drawables[ Atoms::P3_V_Two ] = std::make_unique<VolatileNumber>(font, pColor[2], 2, woodSprite);
+   drawables[ Atoms::P4_V_Two ] = std::make_unique<VolatileNumber>(font, pColor[3], 2, woodSprite);
+   drawables[ Atoms::P1_V_Three ] = std::make_unique<VolatileNumber>(font, pColor[0], 3, woodSprite);
+   drawables[ Atoms::P2_V_Three ] = std::make_unique<VolatileNumber>(font, pColor[1], 3, woodSprite);
+   drawables[ Atoms::P3_V_Three ] = std::make_unique<VolatileNumber>(font, pColor[2], 3, woodSprite);
+   drawables[ Atoms::P4_V_Three ] = std::make_unique<VolatileNumber>(font, pColor[3], 3, woodSprite);
+   drawables[ Atoms::S_One ] = std::make_unique<Number>(font, sColor, 1, woodSprite);
+   drawables[ Atoms::S_Two ] = std::make_unique<Number>(font, sColor, 2, woodSprite);
 
    window.setFramerateLimit(60);
    bool running = false;
@@ -271,7 +270,7 @@ int main()
       sf::Packet packet;
       if (socket.receive( packet ) == sf::Socket::Done ) {
          packet >> player;
-         std::cout << "Connectd to server as player " << player + 1 << std::endl;
+         std::cout << "Connected to server as player " << player + 1 << std::endl;
       }
       socket.setBlocking(false);
    }
@@ -279,7 +278,7 @@ int main()
    bool listening = true;
    sf::TcpListener listener;
    if (client ||  listener.listen(53000) != sf::Socket::Done) {
-      std::cerr << "Uable to open listening socket, network play disabled." << std::endl;
+      std::cerr << "Unable to open listening socket, network play disabled." << std::endl;
       listening = false;
    } else {
       listener.setBlocking(false);
@@ -320,20 +319,22 @@ int main()
          }
          if ( atoms.finished ) {
             if (event.type == sf::Event::MouseButtonPressed) {
-               if (event.mouseButton.button == sf::Mouse::Left) {
+               if (event.mouseButton.button == sf::Mouse::Left /*&& player == atoms.getCurrentPlayer()*/) {
                   x = (int)event.mouseButton.x / (int)TILE_SIZE;
                   y = (int)event.mouseButton.y / (int)TILE_SIZE;
-                  if ( client ) {
-                     if (socket.send(sf::Packet() << x << y) != sf::Socket::Done) {
-                        // error...
-                     }
-                  } else {
-                     click = true;
-                  }
-                  if (listening) {
-                     for (int i = 0 ; i< client_count; ++i ) {
-                        if (clients[i].send(sf::Packet() << x << y) != sf::Socket::Done) {
+                  if ( x <= BOARD_SIZE && y <= BOARD_SIZE) {
+                     if ( client ) {
+                        if (socket.send(sf::Packet() << x << y) != sf::Socket::Done) {
                            // error...
+                        }
+                     } else {
+                        click = true;
+                     }
+                     if (listening) {
+                        for (int i = 0 ; i< client_count; ++i ) {
+                           if (clients[i].send(sf::Packet() << x << y) != sf::Socket::Done) {
+                              // error...
+                           }
                         }
                      }
                   }
@@ -367,9 +368,9 @@ int main()
                click = true;
                for (int j = 0 ; j< client_count; ++j ) {
                      // Send click to the server
-                     sf::Packet newpacket;
-                     newpacket << x << y;
-                     if (clients[j].send(newpacket) != sf::Socket::Done) {
+                     sf::Packet newPacket;
+                     newPacket << x << y;
+                     if (clients[j].send(newPacket) != sf::Socket::Done) {
                         // error...
                      }
                }
@@ -402,13 +403,20 @@ int main()
          }
       }
 
-      const char *buf = "   Score  Board   ";
+      const char *buf = "Score Board";
       sf::Text text;
       text.setFont(font);
       text.setString(buf);
       text.setCharacterSize(TILE_SIZE-5);
-      text.setPosition(BOARD_SIZE*TILE_SIZE+5, TILE_SIZE);
+      text.setPosition(BOARD_SIZE*(TILE_SIZE+9.5), TILE_SIZE);
       text.setFillColor(sf::Color::White);
+
+      // center text
+      sf::FloatRect textRect = text.getLocalBounds();
+      text.setOrigin(textRect.left + textRect.width/2.0f,
+                     textRect.top  + textRect.height/2.0f);
+      text.move((0.5*TILE_SIZE), (0.5*TILE_SIZE));
+
       window.draw(text);
 
       for( int i=0;i<4;++i ) {
@@ -429,13 +437,66 @@ int main()
          text.setPosition(BOARD_SIZE*TILE_SIZE+5, TILE_SIZE*(i+3)-5);
          if (i == atoms.getCurrentPlayer() ) {
             text.setOutlineThickness(5);
-            text.setFillColor(pcolor[i]);
+            text.setFillColor(pColor[i]);
             text.setOutlineColor(sf::Color::White);
          } else {
-            text.setFillColor(pcolor[i]);
+            text.setFillColor(pColor[i]);
          }
          window.draw(text);
       }
+
+      {
+         const char *buf = "New Game";
+         sf::Text text;
+         text.setFont(font);
+         text.setString(buf);
+         text.setCharacterSize(TILE_SIZE-5);
+         text.setPosition(BOARD_SIZE*(TILE_SIZE+9.5), TILE_SIZE*9);
+         text.setFillColor(sf::Color::White);
+         // center text
+         sf::FloatRect textRect = text.getLocalBounds();
+         text.setOrigin(textRect.left + textRect.width/2.0f,
+                        textRect.top  + textRect.height/2.0f);
+         text.move((0.5*TILE_SIZE), (0.5*TILE_SIZE));
+         window.draw(text);
+      }
+      {
+         const char *buf = "Edit Board";
+         sf::Text text;
+         text.setFont(font);
+         text.setString(buf);
+         text.setCharacterSize(TILE_SIZE-5);
+         text.setPosition(BOARD_SIZE*(TILE_SIZE+9.5), TILE_SIZE*10);
+         text.setFillColor(sf::Color::White);
+
+         // center text
+         sf::FloatRect textRect = text.getLocalBounds();
+         text.setOrigin(textRect.left + textRect.width/2.0f,
+                        textRect.top  + textRect.height/2.0f);
+         text.move((0.5*TILE_SIZE), (0.5*TILE_SIZE));
+
+         text.setFillColor(sf::Color::White);
+         window.draw(text);
+      }
+      {
+         const char *buf = "Quit";
+         sf::Text text;
+         text.setFont(font);
+         text.setString(buf);
+         text.setCharacterSize(TILE_SIZE-5);
+         text.setPosition(BOARD_SIZE*(TILE_SIZE+9.5), TILE_SIZE*11);
+         text.setFillColor(sf::Color::White);
+
+         // center text
+         sf::FloatRect textRect = text.getLocalBounds();
+         text.setOrigin(textRect.left + textRect.width/2.0f,
+                        textRect.top  + textRect.height/2.0f);
+         text.move((0.5*TILE_SIZE), (0.5*TILE_SIZE));
+
+         text.setFillColor(sf::Color::White);
+         window.draw(text);
+      }
+      
       window.display();
    }
 

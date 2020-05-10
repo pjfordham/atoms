@@ -1,28 +1,47 @@
 #ifndef SUPPORT_FILE_H
 #define SUPPORT_FILE_H
 
-template<typename type>
+#include <cstddef>
+#include <utility>
+
+template<typename Type>
 class Array2D {
-   int y;
-   type *data;
+
+   size_t y;
+   Type *data;
+
 public:
-   // Implement these properly if needed
-   Array2D(const Array2D&) = delete;
-   Array2D& operator=(const Array2D&) = delete;
-   Array2D(const Array2D&&) = delete;
-   Array2D& operator=(const Array2D&&) = delete;
 
-   // implelemt an iterator that walks whole array
-   // have some get x,y pos maybe too to optimize other stuff
+   Array2D(size_t _x, size_t _y) :
+      y{_y}, data{new Type[_x * y]} {}
 
-   Array2D( int _x, int _y ) : y(_y) {
-      data = new int[_x*y];
-   }
-   type *operator[](int i) {
-      return data + (i * y);
-   }
    ~Array2D() {
       delete[] data;
+   }
+
+   // We can't do a copy since we don't know
+   // what size to allocate the array.
+   Array2D(const Array2D&) = delete;
+   Array2D& operator=(const Array2D&) = delete;
+
+   Array2D(Array2D&& move) noexcept :
+      y{std::exchange(move.y, 0)},
+      data{std::exchange(move.data, nullptr)} {}
+
+   Array2D& operator=(Array2D&& move) noexcept {
+      std::swap(y, move.y);
+      std::swap(data, move.data);
+      return *this;
+   }
+
+   Type *operator[](size_t i) noexcept {
+      // Defined in-terms of const version to
+      // avoid code duplication.
+      return const_cast<Type*>(static_cast<const Array2D*>(this)->operator[](i));
+   }
+
+   const Type *operator[](size_t i) const noexcept {
+      return data + (i * y);
    }
 };
 

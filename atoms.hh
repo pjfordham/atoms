@@ -41,7 +41,7 @@ public:
    void calculateMap();
    void recalculateBoard();
    draw_t getContent( int i, int j);
-   int getCurrentPlayer();
+   int getCurrentPlayer() const;
    bool isPlayerDead( int i );
    int getPlayerScore( int i );
    bool gameOver();

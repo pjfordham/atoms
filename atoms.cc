@@ -19,14 +19,14 @@ bool Atoms::gameOver() {
    int total_atoms = 0;
    if (firstGo[0] || firstGo[1] || firstGo[2] || firstGo[3])
       return false;
-   for( int i=0;i<4;++i) {
-      max_score = std::max( max_score, scores[i] );
-      total_atoms += scores[i];
+   for(int & score : scores) {
+      max_score = std::max( max_score, score );
+      total_atoms += score;
    }
    return (max_score == total_atoms);
 }
 
-int Atoms::getCurrentPlayer() {
+int Atoms::getCurrentPlayer() const {
    return currentPlayer;
 }
 
@@ -38,8 +38,7 @@ int Atoms::getPlayerScore( int i ) {
    return scores[i];
 }
 
-Atoms::~Atoms() {
-}
+Atoms::~Atoms() = default;
 
 void Atoms::clear() {
    if (editing) {
