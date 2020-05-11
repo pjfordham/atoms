@@ -14,12 +14,12 @@ Atoms::Atoms(int _width, int _height ) :
    clear();
 }
 
-bool Atoms::gameOver() {
+bool Atoms::gameOver() const {
    int max_score = 0;
    int total_atoms = 0;
    if (firstGo[0] || firstGo[1] || firstGo[2] || firstGo[3])
       return false;
-   for(int & score : scores) {
+   for(const int & score : scores) {
       max_score = std::max( max_score, score );
       total_atoms += score;
    }
@@ -30,11 +30,11 @@ int Atoms::getCurrentPlayer() const {
    return currentPlayer;
 }
 
-bool Atoms::isPlayerDead( int i ) {
+bool Atoms::isPlayerDead( int i ) const {
    return scores[ i ] == 0 && !firstGo[ i ];
 }
 
-int Atoms::getPlayerScore( int i ) {
+int Atoms::getPlayerScore( int i ) const {
    return scores[i];
 }
 
@@ -114,19 +114,21 @@ void Atoms::recalculateBoard() {
          }
       }
    }
+
+   scores[0] = 0;
+   scores[1] = 0;
+   scores[2] = 0;
+   scores[3] = 0;
+   for ( int i = 0; i < height; i++ ) {
+      for ( int j = 0; j < width; j++ ) {
+         if ( map[i][j] != 0 )
+            if ( player[i][j] != -1 )
+               scores[player[i][j]] += world[i][j];
+      }
+   }
+
    if (finished)
    {
-      scores[0] = 0;
-      scores[1] = 0;
-      scores[2] = 0;
-      scores[3] = 0;
-      for ( int i = 0; i < height; i++ ) {
-         for ( int j = 0; j < width; j++ ) {
-            if ( map[i][j] != 0 )
-               if ( player[i][j] != -1 )
-                  scores[player[i][j]] += world[i][j];
-         }
-      }
       firstGo[ currentPlayer ] = false;
       do {
          currentPlayer = (currentPlayer + 1) % 4;
@@ -149,7 +151,7 @@ void Atoms::click( int j, int i )
    }
 }
 
-Atoms::draw_t Atoms::getContent(int i, int j) {
+Atoms::draw_t Atoms::getContent(int i, int j) const {
    if (editing) {
       switch( map[i][j] ) {
       case 0: return Wall;

@@ -40,11 +40,11 @@ public:
    void clear();
    void calculateMap();
    void recalculateBoard();
-   draw_t getContent( int i, int j);
+   draw_t getContent( int i, int j) const;
    int getCurrentPlayer() const;
-   bool isPlayerDead( int i );
-   int getPlayerScore( int i );
-   bool gameOver();
+   bool isPlayerDead( int i ) const;
+   int getPlayerScore( int i ) const;
+   bool gameOver() const;
    bool editing = true;
    bool finished = true;
 private:
