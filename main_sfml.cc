@@ -109,7 +109,7 @@ public:
 
    virtual void draw( sf::RenderTarget &target, sf::RenderStates states, int frame ) const = 0;
 
-   virtual void draw( sf::RenderTarget &target, sf::RenderStates states ) const {
+   void draw( sf::RenderTarget &target, sf::RenderStates states ) const override {
       states.transform *= getTransform();
       draw( target, states, getCurrentFrame() );
    }
@@ -291,7 +291,7 @@ int main()
       if ( !atoms.finished ) {
          sf::Time elapsed = clock.getElapsedTime();
          if (elapsed.asSeconds() > 0.25f) {
-            atoms.recalculateBoard();
+            atoms.recalculate_board();
             clock.restart();
             drawables[ Atoms::Bang ]->restart();
          }
@@ -388,7 +388,7 @@ int main()
 
       for( int x=0;x<BOARD_SIZE;x++ ){
          for ( int y = 0;y<BOARD_SIZE;y++) {
-            Atoms::draw_t content = atoms.getContent( x, y );
+            Atoms::draw_t content = atoms.get_content( x, y );
             auto &cell = *drawables[ content ];
             cell.setPosition( y*TILE_SIZE, x*TILE_SIZE );
             window.draw( cell );
@@ -423,19 +423,19 @@ int main()
          char buf[21];
          sf::Text text;
          text.setFont(font);
-         if(atoms.isPlayerDead( i )) {
+         if(atoms.is_player_dead( i )) {
             snprintf( buf, 21, "Player %d:    DEAD", i+1);
          } else {
-            if (atoms.gameOver()) {
+            if (atoms.game_over()) {
                snprintf( buf, 21, "Player %d: WINNER!", i+1);
             } else {
-               snprintf( buf, 21, "Player %d:     %3d", i+1, atoms.getPlayerScore(i));
+               snprintf( buf, 21, "Player %d:     %3d", i+1, atoms.get_player_score(i));
             }
          }
          text.setString(buf);
          text.setCharacterSize(TILE_SIZE-5);
          text.setPosition(BOARD_SIZE*TILE_SIZE+5, TILE_SIZE*(i+3)-5);
-         if (i == atoms.getCurrentPlayer() ) {
+         if (i == atoms.get_current_player() ) {
             text.setOutlineThickness(5);
             text.setFillColor(pColor[i]);
             text.setOutlineColor(sf::Color::White);

@@ -38,22 +38,22 @@ public:
    ~Atoms();
    void click( int i, int j );
    void clear();
-   void calculateMap();
-   void recalculateBoard();
-   draw_t getContent( int i, int j) const;
-   int getCurrentPlayer() const;
-   bool isPlayerDead( int i ) const;
-   int getPlayerScore( int i ) const;
-   bool gameOver() const;
+   void calculate_map();
+   void recalculate_board();
+   draw_t get_content( int i, int j) const;
+   int get_current_player() const;
+   bool is_player_dead( int i ) const;
+   int get_player_score( int i ) const;
+   bool game_over() const;
    bool editing = true;
    bool finished = true;
 private:
    int scores[4];
-   int currentPlayer;
+   int current_player;
    int width;
    int height;
-   bool firstGo[4];
-   Array2D<int> player, map, world, otherWorld;
+   bool first_go[4];
+   Array2D<int> player, map, world, other_world;
 };
 
 #endif // ATOMS_FILE_H

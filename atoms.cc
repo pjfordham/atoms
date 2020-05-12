@@ -7,17 +7,17 @@ Atoms::Atoms(int _width, int _height ) :
    player(width,height),
    map(width,height),
    world(width,height),
-   otherWorld(width,height)
+   other_world(width,height)
 {
    clear();
    editing = false;
    clear();
 }
 
-bool Atoms::gameOver() const {
+bool Atoms::game_over() const {
    int max_score = 0;
    int total_atoms = 0;
-   if (firstGo[0] || firstGo[1] || firstGo[2] || firstGo[3])
+   if (first_go[0] || first_go[1] || first_go[2] || first_go[3])
       return false;
    for(const int & score : scores) {
       max_score = std::max( max_score, score );
@@ -26,15 +26,15 @@ bool Atoms::gameOver() const {
    return (max_score == total_atoms);
 }
 
-int Atoms::getCurrentPlayer() const {
-   return currentPlayer;
+int Atoms::get_current_player() const {
+   return current_player;
 }
 
-bool Atoms::isPlayerDead( int i ) const {
-   return scores[ i ] == 0 && !firstGo[ i ];
+bool Atoms::is_player_dead( int i ) const {
+   return scores[ i ] == 0 && !first_go[ i ];
 }
 
-int Atoms::getPlayerScore( int i ) const {
+int Atoms::get_player_score( int i ) const {
    return scores[i];
 }
 
@@ -51,14 +51,14 @@ void Atoms::clear() {
             }
          }
       }
-      calculateMap();
+      calculate_map();
    } else {
       std::minstd_rand rd;
       rd.seed(5);
       std::mt19937 randomNumbers(rd());
-      currentPlayer = 0;
+      current_player = 0;
       scores[0] = scores[1] = scores[2] = scores[3] = 0;
-      firstGo[0] = firstGo[1] = firstGo[2] = firstGo[3] = true;
+      first_go[0] = first_go[1] = first_go[2] = first_go[3] = true;
       for ( int i = 0; i < height; i++ ) {
          for ( int j = 0; j < width; j++ ) {
             if ( map[i][j] < 2 ) {
@@ -66,14 +66,14 @@ void Atoms::clear() {
             } else {
                world[i][j] = std::uniform_int_distribution<int>(0,map[i][j]-1)(randomNumbers);
             }
-            otherWorld[i][j] = 0;
-            player[i][j] = -1;
+            other_world[i][j] = 0;
+            player[i][j] = 20;
          }
       }
    }
 }
 
-void Atoms::calculateMap() {
+void Atoms::calculate_map() {
    for ( int i = 0; i < height; i++ ) {
       for ( int j = 0; j < width; j++ ) {
          if ( map[i][j] != 0 ) {
@@ -87,26 +87,26 @@ void Atoms::calculateMap() {
    }
 }
 
-void Atoms::recalculateBoard() {
+void Atoms::recalculate_board() {
    finished = true;
    for ( int i = 0; i < height; i++ ) {
       for ( int j = 0; j < width; j++ ) {
-         otherWorld[i][j] = world[i][j];
+         other_world[i][j] = world[i][j];
       }
    }
    for ( int i = 0; i < height; i++ ) {
       for ( int j = 0; j < width; j++ ) {
          if ( map[i][j] != 0 ) {
-            if (otherWorld[i][j] > (int)map[i][j]) {
+            if (other_world[i][j] > (int)map[i][j]) {
                world[i][j]-= ((int)map[i][j] + 1 );
                world[i-1][j]++;
                world[i][j-1]++;
                world[i+1][j]++;
                world[i][j+1]++;
-               player[i-1][j]=currentPlayer;
-               player[i][j-1]=currentPlayer;
-               player[i+1][j]=currentPlayer;
-               player[i][j+1]=currentPlayer;
+               player[i-1][j]=current_player;
+               player[i][j-1]=current_player;
+               player[i+1][j]=current_player;
+               player[i][j+1]=current_player;
                finished = false;
             }
          } else {
@@ -122,17 +122,17 @@ void Atoms::recalculateBoard() {
    for ( int i = 0; i < height; i++ ) {
       for ( int j = 0; j < width; j++ ) {
          if ( map[i][j] != 0 )
-            if ( player[i][j] != -1 )
+            if ( player[i][j] != 20 )
                scores[player[i][j]] += world[i][j];
       }
    }
 
    if (finished)
    {
-      firstGo[ currentPlayer ] = false;
+      first_go[ current_player ] = false;
       do {
-         currentPlayer = (currentPlayer + 1) % 4;
-      } while ( scores[ currentPlayer ] == 0 && !firstGo[ currentPlayer ] );
+         current_player = (current_player + 1) % 4;
+      } while ( scores[ current_player ] == 0 && !first_go[ current_player ] );
    }
 }
 
@@ -141,17 +141,17 @@ void Atoms::click( int j, int i )
 {
    if (editing ) {
       map[i][j] = (map[i][j] == 0) ? 3 : 0;
-      calculateMap();
+      calculate_map();
    } else {
-      if ( map[i][j] != 0 && ( player[i][j] == currentPlayer || world[i][j] == 0 ) ) {
+      if ( map[i][j] != 0 && ( player[i][j] == current_player || world[i][j] == 0 ) ) {
          world[i][j]++;
-         player[i][j] = currentPlayer;
+         player[i][j] = current_player;
          finished = false;
       }
    }
 }
 
-Atoms::draw_t Atoms::getContent(int i, int j) const {
+Atoms::draw_t Atoms::get_content(int i, int j) const {
    if (editing) {
       switch( map[i][j] ) {
       case 0: return Wall;
@@ -167,7 +167,7 @@ Atoms::draw_t Atoms::getContent(int i, int j) const {
       case 0: return Empty;
       case 1:
          switch (player[i][j]) {
-         case -1: return S_One;
+         case 20: return S_One;
          case 0: return isVolatile ? P1_V_One : P1_One;
          case 1: return isVolatile ? P2_V_One : P2_One;
          case 2: return isVolatile ? P3_V_One : P3_One;
@@ -175,7 +175,7 @@ Atoms::draw_t Atoms::getContent(int i, int j) const {
          }
       case 2:
          switch (player[i][j]) {
-         case -1: return S_Two;
+         case 20: return S_Two;
          case 0: return isVolatile ? P1_V_Two : P1_Two;
          case 1: return isVolatile ? P2_V_Two : P2_Two;
          case 2: return isVolatile ? P3_V_Two : P3_Two;
