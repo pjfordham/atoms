@@ -47,6 +47,9 @@ public:
    bool game_over() const;
    bool editing = true;
    bool finished = true;
+
+   friend void dump_state(const Atoms &atoms);
+
 private:
    int scores[4];
    int current_player;
