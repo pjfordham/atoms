@@ -37,7 +37,7 @@ public:
    Atoms(int _width, int _height);
    ~Atoms();
    void click( int i, int j );
-   void clear();
+   void clear( bool randomize );
    void calculate_map();
    void recalculate_board();
    draw_t get_content( int i, int j) const;

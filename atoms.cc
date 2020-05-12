@@ -1,5 +1,20 @@
 #include "atoms.hh"
-#include <random>
+#include <cstdint>
+#include <algorithm>
+
+static uint32_t msws() {
+   static uint64_t x = 0;
+   static uint64_t w = 0;
+   static uint64_t s = 0xb5ad4eceda1ce2a9;
+
+   x *= x;
+   x += (w += s);
+   return x = (x>>32) | (x<<32);
+}
+
+static uint32_t rnd_range(int mod) {
+   return msws() % (mod + 1);
+}
 
 Atoms::Atoms(int _width, int _height ) :
    width(_width),
@@ -9,9 +24,9 @@ Atoms::Atoms(int _width, int _height ) :
    world(width,height),
    other_world(width,height)
 {
-   clear();
+   clear( true );
    editing = false;
-   clear();
+   clear( true );
 }
 
 bool Atoms::game_over() const {
@@ -40,7 +55,7 @@ int Atoms::get_player_score( int i ) const {
 
 Atoms::~Atoms() = default;
 
-void Atoms::clear() {
+void Atoms::clear( bool randomize ) {
    if (editing) {
       for ( int i = 0; i < height; i++ ) {
          for ( int j = 0; j < width; j++ ) {
@@ -53,9 +68,6 @@ void Atoms::clear() {
       }
       calculate_map();
    } else {
-      std::minstd_rand rd;
-      rd.seed(5);
-      std::mt19937 randomNumbers(rd());
       current_player = 0;
       scores[0] = scores[1] = scores[2] = scores[3] = 0;
       first_go[0] = first_go[1] = first_go[2] = first_go[3] = true;
@@ -64,7 +76,7 @@ void Atoms::clear() {
             if ( map[i][j] < 2 ) {
                world[i][j] = 0;
             } else {
-               world[i][j] = std::uniform_int_distribution<int>(0,map[i][j]-1)(randomNumbers);
+               world[i][j] = randomize ? rnd_range( map[i][j]-1 ) : 0;
             }
             other_world[i][j] = 0;
             player[i][j] = 20;

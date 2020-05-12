@@ -341,12 +341,15 @@ int main()
                }
             }
             else if (event.type == sf::Event::KeyPressed) {
+               if (event.key.code == sf::Keyboard::R){
+                  atoms.clear( true );
+               }
                if (event.key.code == sf::Keyboard::C){
-                  atoms.clear();
+                  atoms.clear( false );
                }
                if (event.key.code == sf::Keyboard::Space){
                   if (!atoms.editing) {
-                     atoms.clear();
+                     atoms.clear( true );
                   }
                   atoms.editing = !atoms.editing;
                }
