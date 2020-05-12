@@ -220,8 +220,6 @@ int main()
    sf::Color sColor = sf::Color::White;
 
    sf::RenderWindow window(sf::VideoMode((10+BOARD_SIZE) * (int)TILE_SIZE, BOARD_SIZE * (int)TILE_SIZE), "Atoms");
-   window.setFramerateLimit( 50 );
-
    sf::Clock clock;
 
    std::array<std::unique_ptr<Element>,Atoms::draw_t_size > drawables;
@@ -259,7 +257,6 @@ int main()
    drawables[ Atoms::S_Two ] = std::make_unique<Number>(font, sColor, 2, woodSprite);
 
    window.setFramerateLimit(60);
-   bool running = false;
 
    int32_t player = 0;
    bool client = false;
